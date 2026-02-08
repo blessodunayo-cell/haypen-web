@@ -6,19 +6,29 @@ export default function Home() {
       <header className="border-b">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div className="text-2xl font-semibold tracking-tight">Haypen</div>
+
           <nav className="flex items-center gap-3">
-            <a className="text-sm hover:underline" href="#">
+            <a className="text-sm hover:underline" href="/explore">
               Explore
             </a>
-            <a className="text-sm hover:underline" href="#">
+
+            <a className="text-sm hover:underline" href="/write">
               Write
             </a>
-            <button className="rounded-full border px-4 py-2 text-sm hover:bg-gray-50">
+
+            <a
+              className="rounded-full border px-4 py-2 text-sm hover:bg-gray-50"
+              href="/login"
+            >
               Sign in
-            </button>
-            <button className="rounded-full bg-black px-4 py-2 text-sm text-white hover:bg-gray-800">
+            </a>
+
+            <a
+              className="rounded-full bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+              href="/signup"
+            >
               Get started
-            </button>
+            </a>
           </nav>
         </div>
       </header>
@@ -36,18 +46,25 @@ export default function Home() {
             </p>
 
             <div className="mt-8 flex gap-3">
-              <button className="rounded-full bg-black px-5 py-3 text-sm text-white hover:bg-gray-800">
+              <a
+                className="rounded-full bg-black px-5 py-3 text-sm text-white hover:bg-gray-800"
+                href="/explore"
+              >
                 Start reading
-              </button>
-              <button className="rounded-full border px-5 py-3 text-sm hover:bg-gray-50">
+              </a>
+
+              <a
+                className="rounded-full border px-5 py-3 text-sm hover:bg-gray-50"
+                href="/signup"
+              >
                 Become a writer
-              </button>
+              </a>
             </div>
 
             <div className="mt-10 border-t pt-8">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Trending</h2>
-                <a className="text-sm text-gray-600 hover:underline" href="#">
+                <a className="text-sm text-gray-600 hover:underline" href="/explore">
                   See all
                 </a>
               </div>
@@ -102,9 +119,13 @@ export default function Home() {
                 <p className="mt-1 text-sm text-gray-600">
                   Create your channel and publish your first story in minutes.
                 </p>
-                <button className="mt-4 w-full rounded-full bg-black px-4 py-2 text-sm text-white hover:bg-gray-800">
+
+                <a
+                  className="mt-4 block w-full rounded-full bg-black px-4 py-2 text-center text-sm text-white hover:bg-gray-800"
+                  href="/login"
+                >
                   Create a channel
-                </button>
+                </a>
               </div>
             </div>
           </aside>
