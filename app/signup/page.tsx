@@ -47,7 +47,7 @@ export default function SignupPage() {
       options: {
         emailRedirectTo:
           typeof window !== "undefined"
-            ? `${window.location.origin}/login`
+            ? `${window.location.origin}/auth/callback`
             : undefined,
         data: {
           display_name: displayName.trim(),
@@ -59,7 +59,7 @@ export default function SignupPage() {
 
     if (signUpError) return setError(signUpError.message);
 
-    setMessage("Account created ✅ Check your email to verify, then sign in.");
+    setMessage("Account created ✅ Check your email to verify.");
     setPassword("");
   }
 

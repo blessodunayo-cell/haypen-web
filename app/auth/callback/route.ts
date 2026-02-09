@@ -1,0 +1,37 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+
+  const cookieStore = await cookies();
+
+  // Create the redirect response FIRST, so Supabase can set cookies on it
+  const response = NextResponse.redirect(new URL("/feed", url.origin));
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          response.cookies.set({ name, value: "", ...options, maxAge: 0 });
+        },
+      },
+    }
+  );
+
+  if (code) {
+    await supabase.auth.exchangeCodeForSession(code);
+  }
+
+  return response;
+}
