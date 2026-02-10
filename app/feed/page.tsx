@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -10,8 +11,11 @@ const supabase = createClient(
 );
 
 export default function FeedPage() {
+  const router = useRouter();
+
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -38,6 +42,13 @@ export default function FeedPage() {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    await supabase.auth.signOut();
+    setSigningOut(false);
+    router.push("/");
+  }
 
   if (loading) {
     return (
@@ -100,8 +111,28 @@ export default function FeedPage() {
 
   return (
     <main style={{ padding: 24 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 800 }}>Your Haypen Feed</h1>
-      <p style={{ marginTop: 8, opacity: 0.8 }}>Signed in as: {email}</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0 }}>Your Haypen Feed</h1>
+          <p style={{ marginTop: 8, opacity: 0.8 }}>Signed in as: {email}</p>
+        </div>
+
+        <button
+          onClick={handleSignOut}
+          disabled={signingOut}
+          style={{
+            padding: "10px 16px",
+            borderRadius: 999,
+            border: "1px solid rgba(0,0,0,0.2)",
+            background: "transparent",
+            fontWeight: 700,
+            cursor: signingOut ? "not-allowed" : "pointer",
+            opacity: signingOut ? 0.7 : 1,
+          }}
+        >
+          {signingOut ? "Signing out..." : "Sign out"}
+        </button>
+      </div>
 
       <div style={{ marginTop: 20, padding: 16, border: "1px solid #333", borderRadius: 12 }}>
         <p style={{ margin: 0, opacity: 0.9 }}>
