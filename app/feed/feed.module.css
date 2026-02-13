@@ -1,0 +1,23 @@
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 18px 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr 320px;
+    align-items: start;
+  }
+}
+
+.feedCol {
+  display: grid;
+  gap: 14px;
+}

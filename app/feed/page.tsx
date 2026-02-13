@@ -1,9 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+
+import TopNav from "@/components/feed/TopNav";
+import FeedTabs from "@/components/feed/FeedTabs";
+import PostCard from "@/components/feed/PostCard";
+import FeedRightRail from "@/components/feed/FeedRightRail";
+
+import styles from "./feed.module.css";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,8 +27,8 @@ export default function FeedPage() {
     let alive = true;
 
     async function load() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
 
       if (!alive) return;
 
@@ -50,6 +56,42 @@ export default function FeedPage() {
     router.push("/");
   }
 
+  const posts = [
+    {
+      id: "1",
+      title: "The Quiet Strength of Starting Over",
+      excerpt:
+        "Some days you wake up and realize your life has been moving without your permission. This is how I took it back...",
+      author: "Blessing Oba",
+      category: "Life",
+      readTime: "6 min read",
+      views: 12450,
+      cover: "https://picsum.photos/seed/haypen1/1200/700",
+    },
+    {
+      id: "2",
+      title: "A Letter to the Girl Who Won’t Quit",
+      excerpt:
+        "If nobody sees you yet, keep building. Your future self is watching and silently thanking you...",
+      author: "Blessing Oba",
+      category: "Motivation",
+      readTime: "4 min read",
+      views: 8820,
+      cover: "https://picsum.photos/seed/haypen2/1200/700",
+    },
+    {
+      id: "3",
+      title: "Why Your First Draft Should Be Ugly",
+      excerpt:
+        "Perfection is the fastest way to kill your writing career. Here’s the method that saved me...",
+      author: "Blessing Oba",
+      category: "Writing",
+      readTime: "5 min read",
+      views: 20110,
+      cover: "https://picsum.photos/seed/haypen3/1200/700",
+    },
+  ];
+
   if (loading) {
     return (
       <main style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
@@ -59,86 +101,28 @@ export default function FeedPage() {
   }
 
   if (!email) {
-    return (
-      <main
-        style={{
-          minHeight: "100vh",
-          background:
-            "radial-gradient(1200px 600px at 20% 0%, rgba(255,255,255,0.08), transparent 55%), #0b0b0b",
-          color: "white",
-          padding: "64px 20px",
-        }}
-      >
-        <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          <h1 style={{ fontSize: 40, fontWeight: 800, margin: 0 }}>
-            You&apos;re not signed in
-          </h1>
-          <p style={{ marginTop: 12, opacity: 0.8 }}>
-            Please sign in to access your feed.
-          </p>
-
-          <div style={{ display: "flex", gap: 16, marginTop: 22, alignItems: "center" }}>
-            <Link
-              href="/login"
-              style={{
-                padding: "10px 16px",
-                borderRadius: 999,
-                border: "1px solid rgba(255,255,255,0.18)",
-                textDecoration: "none",
-                color: "inherit",
-                fontWeight: 600,
-              }}
-            >
-              Go to Sign in
-            </Link>
-
-            <Link
-              href="/"
-              style={{
-                textDecoration: "underline",
-                color: "inherit",
-                opacity: 0.9,
-                fontWeight: 600,
-              }}
-            >
-              Back to Home
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
+    router.push("/login");
+    return null;
   }
 
   return (
-    <main style={{ padding: 24 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0 }}>Your Haypen Feed</h1>
-          <p style={{ marginTop: 8, opacity: 0.8 }}>Signed in as: {email}</p>
+    <div style={{ minHeight: "100vh", background: "#0b0b0b", color: "white" }}>
+      <TopNav onSignOut={handleSignOut} signingOut={signingOut} />
+      <FeedTabs active="for-you" />
+
+      <main className={styles.wrap}>
+        <div className={styles.grid}>
+          <section className={styles.feedCol}>
+            {posts.map((p) => (
+              <PostCard key={p.id} {...p} />
+            ))}
+          </section>
+
+          <aside>
+            <FeedRightRail />
+          </aside>
         </div>
-
-        <button
-          onClick={handleSignOut}
-          disabled={signingOut}
-          style={{
-            padding: "10px 16px",
-            borderRadius: 999,
-            border: "1px solid rgba(0,0,0,0.2)",
-            background: "transparent",
-            fontWeight: 700,
-            cursor: signingOut ? "not-allowed" : "pointer",
-            opacity: signingOut ? 0.7 : 1,
-          }}
-        >
-          {signingOut ? "Signing out..." : "Sign out"}
-        </button>
-      </div>
-
-      <div style={{ marginTop: 20, padding: 16, border: "1px solid #333", borderRadius: 12 }}>
-        <p style={{ margin: 0, opacity: 0.9 }}>
-          This is your feed page. Next we’ll load real posts here.
-        </p>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
