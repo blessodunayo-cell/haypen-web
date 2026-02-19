@@ -1,19 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 
 export default function DashboardPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [monetizationOn, setMonetizationOn] = useState(true);
 
   const dummyPosts = useMemo(
     () =>
-      Array.from({ length: 10 }).map((_, i) => ({
+      Array.from({ length: 14 }).map((_, i) => ({
         id: i + 1,
         title: `Dummy Post Title ${i + 1}`,
-        excerpt:
-          "This is a short preview of the post. Your real content will show here once you start publishing on Haypen...",
-        meta: "Life • 6 min read • 0 views",
+        views: 0,
+        type: i % 3 === 0 ? "Series" : i % 3 === 1 ? "Article" : "Poem",
       })),
     []
   );
@@ -29,137 +27,132 @@ export default function DashboardPage() {
     >
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "280px 1fr",
-          gap: 24,
-          maxWidth: 1200,
+          maxWidth: 1250,
           margin: "0 auto",
-          padding: 24,
+          padding: "22px",
+          display: "grid",
+          gridTemplateColumns: "310px 1fr",
+          gap: 22,
         }}
       >
-        {/* ===== LEFT SIDEBAR ===== */}
+        {/* LEFT SIDEBAR (your sketch) */}
         <aside
           style={{
-            position: "sticky",
-            top: 90,
-            alignSelf: "start",
-            height: "fit-content",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 14,
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,0.10)",
             background: "rgba(255,255,255,0.03)",
             padding: 16,
+            height: "fit-content",
+            position: "sticky",
+            top: 18,
           }}
         >
-          {/* Avatar + name */}
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {/* Big avatar + name */}
+          <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
             <div
               style={{
-                width: 74,
-                height: 74,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.12)",
+                width: 84,
+                height: 84,
+                borderRadius: 18,
+                background: "rgba(255,255,255,0.10)",
               }}
             />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 18, fontWeight: 800 }}>Blessing</div>
+              <div style={{ fontSize: 18, fontWeight: 900 }}>Blessing</div>
               <div style={{ fontSize: 12, opacity: 0.75 }}>Writer • Creator</div>
-            </div>
-
-            {/* 3-dots dropdown */}
-            <div style={{ position: "relative" }}>
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-label="More"
-                title="More"
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  background: "transparent",
-                  color: "white",
-                  cursor: "pointer",
-                  opacity: 0.9,
-                }}
-              >
-                ⋮
-              </button>
-
-              {menuOpen ? (
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    top: 40,
-                    width: 200,
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    background: "#0f0f0f",
-                    overflow: "hidden",
-                    zIndex: 10,
-                  }}
-                >
-                  <MenuItem href="/profile">Edit profile</MenuItem>
-                  <MenuItem href="/dashboard">Dashboard</MenuItem>
-                  <MenuItem href="/dashboard">Earnings 💵</MenuItem>
-                  <MenuItem href="/settings">Settings</MenuItem>
-                </div>
-              ) : null}
             </div>
           </div>
 
           {/* Write button */}
-          <div style={{ marginTop: 14 }}>
-            <Link
-              href="/write"
+          <button
+            type="button"
+            onClick={() => alert("Write (will link to /write soon)")}
+            style={{
+              marginTop: 14,
+              width: "100%",
+              padding: "12px 14px",
+              borderRadius: 999,
+              border: "1px solid rgba(255,255,255,0.14)",
+              background: "rgba(255,255,255,0.06)",
+              color: "white",
+              fontWeight: 900,
+              cursor: "pointer",
+            }}
+          >
+            Write
+          </button>
+
+          {/* Monetization ON (creator-level) */}
+          <div
+            style={{
+              marginTop: 14,
+              borderRadius: 14,
+              border: "1px solid rgba(255,255,255,0.10)",
+              background: "rgba(255,255,255,0.02)",
+              padding: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 900 }}>Monetization</div>
+              <div style={{ fontSize: 12, opacity: 0.75 }}>
+                {monetizationOn ? "ON" : "OFF"} (dummy)
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setMonetizationOn((v) => !v)}
               style={{
-                display: "block",
-                textAlign: "center",
-                padding: "12px 14px",
+                width: 56,
+                height: 30,
                 borderRadius: 999,
-                background: "white",
-                color: "#0b0b0b",
+                border: "1px solid rgba(255,255,255,0.16)",
+                background: monetizationOn ? "rgba(255,255,255,0.18)" : "transparent",
+                color: "white",
+                cursor: "pointer",
                 fontWeight: 900,
-                textDecoration: "none",
               }}
+              title="Toggle monetization"
             >
-              Write
-            </Link>
+              {monetizationOn ? "ON" : "OFF"}
+            </button>
           </div>
 
           {/* Earnings card */}
           <div
             style={{
               marginTop: 14,
-              borderRadius: 12,
-              padding: 14,
+              borderRadius: 14,
               border: "1px solid rgba(255,255,255,0.10)",
               background: "rgba(255,255,255,0.02)",
+              padding: 14,
             }}
           >
             <div style={{ fontSize: 12, opacity: 0.75 }}>Estimated earnings</div>
             <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>$0.00</div>
-            <div style={{ fontSize: 12, opacity: 0.65, marginTop: 6 }}>
-              (Dummy for now)
-            </div>
+            <div style={{ fontSize: 12, opacity: 0.65, marginTop: 6 }}>(Dummy for now)</div>
           </div>
 
-          {/* Sidebar nav */}
-          <nav style={{ marginTop: 14, display: "grid", gap: 8 }}>
-            <SideLink href="/dashboard" label="Dashboard" />
-            <SideLink href="/profile" label="Profile" />
-            <SideLink href="/dashboard" label="Earnings" icon="💵" />
-            <SideLink href="/settings" label="Settings" />
-          </nav>
+          {/* Quick links (like your sketch list) */}
+          <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+            <SideBtn label="Notifications" onClick={() => alert("Notifications (dummy)")} />
+            <SideBtn label="Analytics" onClick={() => alert("Analytics (dummy)")} />
+            <SideBtn label="Earnings" onClick={() => alert("Earnings (dummy)")} />
+            <SideBtn label="Settings" onClick={() => alert("Settings (dummy)")} />
+          </div>
         </aside>
 
-        {/* ===== MAIN CONTENT ===== */}
+        {/* RIGHT MAIN: Square-ish post cards grid */}
         <section>
           <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between" }}>
             <div>
               <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>Your Posts</h1>
               <p style={{ marginTop: 8, opacity: 0.75 }}>
-                Your published work will appear here as cards.
+                Your posts will show here as square cards. (Dummy for now)
               </p>
             </div>
 
@@ -170,49 +163,37 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div style={{ marginTop: 18, display: "grid", gap: 14 }}>
+          <div
+            style={{
+              marginTop: 16,
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              gap: 14,
+            }}
+          >
             {dummyPosts.map((p) => (
               <article
                 key={p.id}
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "200px 1fr",
-                  gap: 14,
                   borderRadius: 14,
                   overflow: "hidden",
                   border: "1px solid rgba(255,255,255,0.10)",
                   background: "rgba(255,255,255,0.03)",
                 }}
               >
-                {/* Thumbnail */}
-                <div style={{ background: "rgba(255,255,255,0.10)", minHeight: 120 }} />
+                {/* Square-ish cover */}
+                <div
+                  style={{
+                    aspectRatio: "16 / 10",
+                    background: "rgba(255,255,255,0.10)",
+                  }}
+                />
 
-                {/* Text */}
-                <div style={{ padding: 14 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                    <h2 style={{ margin: 0, fontSize: 16, fontWeight: 900 }}>{p.title}</h2>
-                    <span
-                      style={{
-                        fontSize: 12,
-                        padding: "4px 10px",
-                        borderRadius: 999,
-                        border: "1px solid rgba(255,255,255,0.12)",
-                        opacity: 0.85,
-                        height: "fit-content",
-                      }}
-                    >
-                      Monetized ✓
-                    </span>
-                  </div>
+                <div style={{ padding: 12 }}>
+                  <div style={{ fontWeight: 900 }}>{p.title}</div>
 
-                  <p style={{ marginTop: 8, marginBottom: 10, opacity: 0.78, lineHeight: 1.45 }}>
-                    {p.excerpt}
-                  </p>
-
-                  <div style={{ display: "flex", gap: 10, alignItems: "center", opacity: 0.75 }}>
-                    <span style={{ fontSize: 12 }}>{p.meta}</span>
-                    <span style={{ fontSize: 12 }}>•</span>
-                    <span style={{ fontSize: 12 }}>Published</span>
+                  <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
+                    {p.type} • {p.views} views
                   </div>
                 </div>
               </article>
@@ -220,42 +201,29 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
-
-      {/* Click outside dropdown closes it (simple overlay) */}
-      {menuOpen ? (
-        <div
-          onClick={() => setMenuOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 5,
-          }}
-        />
-      ) : null}
     </main>
   );
 }
 
-function SideLink({ href, label, icon }: { href: string; label: string; icon?: string }) {
+function SideBtn({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <Link
-      href={href}
+    <button
+      onClick={onClick}
       style={{
-        textDecoration: "none",
-        color: "white",
-        padding: "10px 12px",
-        borderRadius: 10,
+        width: "100%",
+        textAlign: "left",
+        padding: "12px 12px",
+        borderRadius: 12,
         border: "1px solid rgba(255,255,255,0.10)",
         background: "rgba(255,255,255,0.02)",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        opacity: 0.9,
+        color: "white",
+        cursor: "pointer",
+        fontWeight: 800,
+        opacity: 0.92,
       }}
     >
-      <span style={{ fontWeight: 700 }}>{label}</span>
-      {icon ? <span style={{ opacity: 0.85 }}>{icon}</span> : null}
-    </Link>
+      {label}
+    </button>
   );
 }
 
@@ -269,29 +237,11 @@ function Chip({ children, active }: { children: string; active?: boolean }) {
         background: active ? "rgba(255,255,255,0.10)" : "transparent",
         color: "white",
         cursor: "pointer",
-        fontWeight: 800,
+        fontWeight: 900,
         opacity: 0.9,
       }}
     >
       {children}
     </button>
-  );
-}
-
-function MenuItem({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      style={{
-        display: "block",
-        padding: "10px 12px",
-        textDecoration: "none",
-        color: "white",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
-        opacity: 0.9,
-      }}
-    >
-      {children}
-    </Link>
   );
 }
