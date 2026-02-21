@@ -5,7 +5,7 @@ export default function FeedTabs({ active = "for-you" }: { active?: string }) {
     { key: "for-you", label: "For You" },
     { key: "latest", label: "Latest" },
     { key: "following", label: "Following" },
-    { key: "popular", label: "Popular" },
+    { key: "series", label: "Series" },
   ];
 
   return (
