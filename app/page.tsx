@@ -2,8 +2,8 @@ import { stories } from "./data/stories";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white text-gray-900">
-      <header className="border-b">
+    <main className="min-h-screen text-gray-900" style={{ background: "#EEEAF7" }}>
+      <header className="border-b border-black/10 bg-[rgba(238,234,247,0.75)] backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div className="text-2xl font-semibold tracking-tight">Haypen</div>
 
@@ -16,13 +16,15 @@ export default function Home() {
               Write
             </a>
 
+            {/* ✅ back to your original look */}
             <a
-              className="rounded-full border px-4 py-2 text-sm hover:bg-gray-50"
+              className="rounded-full border px-4 py-2 text-sm hover:bg-black/5"
               href="/login"
             >
               Sign in
             </a>
 
+            {/* ✅ back to your original black pill */}
             <a
               className="rounded-full bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
               href="/signup"
@@ -40,12 +42,13 @@ export default function Home() {
               A home for stories. A place for writers.
             </h1>
 
-            <p className="mt-4 max-w-2xl text-gray-600">
+            <p className="mt-4 max-w-2xl text-gray-700">
               Haypen is a clean, modern home for stories, chapters, and articles.
               Read, write, follow creators, and discover what’s trending.
             </p>
 
             <div className="mt-8 flex gap-3">
+              {/* ✅ restore original */}
               <a
                 className="rounded-full bg-black px-5 py-3 text-sm text-white hover:bg-gray-800"
                 href="/explore"
@@ -54,17 +57,17 @@ export default function Home() {
               </a>
 
               <a
-                className="rounded-full border px-5 py-3 text-sm hover:bg-gray-50"
+                className="rounded-full border px-5 py-3 text-sm hover:bg-black/5"
                 href="/signup"
               >
                 Become a writer
               </a>
             </div>
 
-            <div className="mt-10 border-t pt-8">
+            <div className="mt-10 border-t border-black/10 pt-8">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Trending</h2>
-                <a className="text-sm text-gray-600 hover:underline" href="/explore">
+                <a className="text-sm text-gray-700 hover:underline" href="/explore">
                   See all
                 </a>
               </div>
@@ -73,16 +76,16 @@ export default function Home() {
                 {stories.map((p) => (
                   <article
                     key={p.id}
-                    className="rounded-2xl border p-5 hover:bg-gray-50"
+                    className="rounded-2xl border border-black/10 bg-white p-5 hover:bg-black/5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="rounded-full border px-3 py-1 text-xs text-gray-700">
+                      <span className="rounded-full border border-black/10 bg-white px-3 py-1 text-xs text-gray-700">
                         {p.tag}
                       </span>
-                      <span className="text-xs text-gray-500">{p.readTime}</span>
+                      <span className="text-xs text-gray-600">{p.readTime}</span>
                     </div>
                     <h3 className="mt-3 text-xl font-semibold">{p.title}</h3>
-                    <p className="mt-1 text-sm text-gray-600">by {p.author}</p>
+                    <p className="mt-1 text-sm text-gray-700">by {p.author}</p>
                   </article>
                 ))}
               </div>
@@ -91,32 +94,26 @@ export default function Home() {
 
           <aside className="md:col-span-1">
             <div className="sticky top-6 space-y-6">
-              <div className="rounded-2xl border p-5">
+              <div className="rounded-2xl border border-black/10 bg-white p-5">
                 <h3 className="text-base font-semibold">Leaderboard</h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  Top writers this week.
-                </p>
+                <p className="mt-1 text-sm text-gray-700">Top writers this week.</p>
                 <ol className="mt-4 space-y-3 text-sm">
-                  {[
-                    "Ayin X",
-                    "Nadia Writes",
-                    "Kemi Stories",
-                    "Olu Prose",
-                    "Zainab Ink",
-                  ].map((name, i) => (
-                    <li key={name} className="flex items-center justify-between">
-                      <span className="text-gray-700">
-                        {i + 1}. {name}
-                      </span>
-                      <span className="text-gray-500">⭐</span>
-                    </li>
-                  ))}
+                  {["Ayin X", "Nadia Writes", "Kemi Stories", "Olu Prose", "Zainab Ink"].map(
+                    (name, i) => (
+                      <li key={name} className="flex items-center justify-between">
+                        <span className="text-gray-800">
+                          {i + 1}. {name}
+                        </span>
+                        <span className="text-gray-600">⭐</span>
+                      </li>
+                    )
+                  )}
                 </ol>
               </div>
 
-              <div className="rounded-2xl border p-5">
+              <div className="rounded-2xl border border-black/10 bg-white p-5">
                 <h3 className="text-base font-semibold">Start writing</h3>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-gray-700">
                   Create your channel and publish your first story in minutes.
                 </p>
 
@@ -132,8 +129,8 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t">
-        <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-gray-500">
+      <footer className="border-t border-black/10">
+        <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-gray-600">
           © {new Date().getFullYear()} Haypen • Privacy • Terms
         </div>
       </footer>

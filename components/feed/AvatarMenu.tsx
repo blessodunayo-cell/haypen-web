@@ -72,7 +72,8 @@ export default function AvatarMenu({
             zIndex: 100,
           }}
         >
-          <HoverLink href="/profile" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
+          {/* ✅ FIXED: Owner "Me" profile */}
+          <HoverLink href="/me" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
             Profile
           </HoverLink>
 
