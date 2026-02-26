@@ -1,40 +1,87 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabase";
+
+function getHashParam(key: string) {
+  if (typeof window === "undefined") return null;
+  const hash = window.location.hash?.replace(/^#/, "") || "";
+  const params = new URLSearchParams(hash);
+  return params.get(key);
+}
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const search = useSearchParams();
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  // Supabase sends recovery tokens in the URL hash: #access_token=...&type=recovery
   useEffect(() => {
-    if (!window.location.hash) {
+    let alive = true;
+
+    async function init() {
+      setMsg(null);
+
+      // 1) PKCE style: ?code=...
+      const code = search.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!alive) return;
+        if (error) {
+          setMsg("This reset link is invalid or expired. Please request a new one.");
+          setReady(false);
+          return;
+        }
+        setReady(true);
+        return;
+      }
+
+      // 2) Hash style: #access_token=...&refresh_token=...
+      const access_token = getHashParam("access_token");
+      const refresh_token = getHashParam("refresh_token");
+
+      if (access_token && refresh_token) {
+        const { error } = await supabase.auth.setSession({
+          access_token,
+          refresh_token,
+        });
+
+        if (!alive) return;
+
+        if (error) {
+          setMsg("This reset link is invalid or expired. Please request a new one.");
+          setReady(false);
+          return;
+        }
+
+        setReady(true);
+        return;
+      }
+
+      // 3) If nothing provided
       setMsg("No recovery token found. Please request a new reset link.");
+      setReady(false);
     }
-  }, []);
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: 12,
-    marginTop: 6,
-    borderRadius: 12,
-    border: "1px solid var(--hp-border)",
-    background: "var(--hp-card)",
-    color: "var(--hp-text)",
-    outline: "none",
-    boxShadow: "var(--hp-shadow-card)",
-  };
+    init();
+    return () => {
+      alive = false;
+    };
+  }, [search]);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
+
+    if (!ready) {
+      setMsg("Please open the reset link from your email again.");
+      return;
+    }
 
     if (password.length < 6) {
       setMsg("Password must be at least 6 characters.");
@@ -54,9 +101,9 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    setMsg("Password updated successfully. Redirecting to login…");
+    setMsg("Password updated successfully ✅ Redirecting…");
     setTimeout(() => router.replace("/login"), 900);
-  };
+  }
 
   return (
     <main
@@ -66,138 +113,91 @@ export default function ResetPasswordPage() {
         color: "var(--hp-text)",
         display: "grid",
         placeItems: "center",
-        padding: "40px 16px",
+        padding: "0 16px",
       }}
     >
-      <div style={{ width: "100%", maxWidth: 520 }}>
-        <div
-          style={{
-            marginBottom: 14,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <div style={{ fontWeight: 950, letterSpacing: 0.2 }}>Haypen</div>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          borderRadius: 18,
+          border: "1px solid var(--hp-border)",
+          background: "var(--hp-card)",
+          boxShadow: "var(--hp-shadow-card)",
+          padding: 18,
+        }}
+      >
+        <div style={{ fontWeight: 900, marginBottom: 10 }}>Haypen</div>
 
-          <button
-            type="button"
-            className="hp-btn"
-            onClick={() => router.push("/login")}
-            style={pill()}
-          >
-            Back to sign in
-          </button>
-        </div>
+        <h1 style={{ fontSize: 26, fontWeight: 950, margin: 0 }}>
+          Reset password
+        </h1>
+        <p style={{ marginTop: 10, color: "var(--hp-muted)" }}>
+          Enter a new password for your account.
+        </p>
 
-        <div
-          style={{
-            borderRadius: 18,
-            border: "1px solid var(--hp-border)",
-            background: "var(--hp-card)",
-            boxShadow: "var(--hp-shadow-card)",
-            padding: 18,
-          }}
-        >
-          <h1 style={{ fontSize: 26, fontWeight: 950, margin: 0 }}>
-            Reset password
-          </h1>
-
-          <p style={{ marginTop: 10, color: "var(--hp-muted)" }}>
-            Enter a new password for your account.
-          </p>
-
-          <form onSubmit={onSubmit} style={{ marginTop: 18, display: "grid", gap: 14 }}>
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 800, opacity: 0.95 }}>
-                New password
-              </span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="New password"
-                style={inputStyle}
-                required
-              />
-            </label>
-
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 800, opacity: 0.95 }}>
-                Confirm password
-              </span>
-              <input
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                placeholder="Confirm password"
-                style={inputStyle}
-                required
-              />
-            </label>
-
-            {msg ? (
-              <div
-                style={{
-                  fontSize: 13,
-                  color: msg.toLowerCase().includes("success")
-                    ? "var(--hp-text)"
-                    : "var(--hp-muted)",
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  border: "1px solid var(--hp-border)",
-                  background:
-                    "linear-gradient(180deg, rgba(124,108,255,0.10), rgba(124,108,255,0.04))",
-                  boxShadow: "var(--hp-shadow-card)",
-                }}
-              >
-                {msg}
-              </div>
-            ) : null}
-
-            <button
-              disabled={loading}
-              type="submit"
-              className="hp-btn"
+        <form onSubmit={onSubmit} style={{ marginTop: 16, display: "grid", gap: 12 }}>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>New password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="New password"
               style={{
                 width: "100%",
                 padding: 12,
-                borderRadius: 999,
+                borderRadius: 12,
                 border: "1px solid var(--hp-border)",
-                background:
-                  "linear-gradient(180deg, rgba(124,108,255,0.22), rgba(124,108,255,0.10))",
+                background: "var(--hp-card)",
                 color: "var(--hp-text)",
-                fontWeight: 950,
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.7 : 1,
+                outline: "none",
                 boxShadow: "var(--hp-shadow-card)",
               }}
-            >
-              {loading ? "Updating…" : "Update password"}
-            </button>
+            />
+          </label>
 
-            <div style={{ fontSize: 12, color: "var(--hp-muted)" }}>
-              Tip: Use at least 8 characters for stronger security.
-            </div>
-          </form>
-        </div>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>Confirm password</span>
+            <input
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="Confirm password"
+              style={{
+                width: "100%",
+                padding: 12,
+                borderRadius: 12,
+                border: "1px solid var(--hp-border)",
+                background: "var(--hp-card)",
+                color: "var(--hp-text)",
+                outline: "none",
+                boxShadow: "var(--hp-shadow-card)",
+              }}
+            />
+          </label>
+
+          {msg ? <div style={{ color: "var(--hp-muted)", fontSize: 13 }}>{msg}</div> : null}
+
+          <button
+            disabled={loading || !ready}
+            style={{
+              padding: 12,
+              borderRadius: 999,
+              border: "1px solid var(--hp-border)",
+              background: "var(--hp-accent)",
+              color: "white",
+              fontWeight: 900,
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading || !ready ? 0.6 : 1,
+              boxShadow: "var(--hp-shadow-card)",
+            }}
+            type="submit"
+          >
+            {loading ? "Updating…" : "Update password"}
+          </button>
+        </form>
       </div>
     </main>
   );
-}
-
-function pill(): React.CSSProperties {
-  return {
-    padding: "8px 12px",
-    borderRadius: 999,
-    border: "1px solid var(--hp-border)",
-    background: "var(--hp-card)",
-    color: "var(--hp-text)",
-    fontWeight: 850,
-    fontSize: 12,
-    whiteSpace: "nowrap",
-    boxShadow: "var(--hp-shadow-card)",
-    cursor: "pointer",
-  };
 }
