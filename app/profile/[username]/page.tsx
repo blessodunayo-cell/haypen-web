@@ -59,16 +59,20 @@ export default function PublicProfilePage() {
   }, [imagePool]);
 
   return (
-    <main style={{ minHeight: "100vh", background: "#0b0b0b", color: "white" }}>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "var(--hp-bg)",
+        color: "var(--hp-text)",
+      }}
+    >
       {/* Simple top bar for public profile (no creator controls) */}
       <div
+        className="hp-topnav"
         style={{
           position: "sticky",
           top: 0,
           zIndex: 50,
-          borderBottom: "1px solid rgba(255,255,255,0.10)",
-          background: "rgba(11,11,11,0.86)",
-          backdropFilter: "blur(10px)",
         }}
       >
         <div
@@ -79,24 +83,16 @@ export default function PublicProfilePage() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 14,
+            maxWidth: 1100,
+            margin: "0 auto",
           }}
         >
-          <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: 0.2 }}>Haypen</div>
+          <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: 0.2 }}>
+            Haypen
+          </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Link
-              href="/feed"
-              style={{
-                textDecoration: "none",
-                padding: "8px 12px",
-                borderRadius: 999,
-                border: "1px solid rgba(255,255,255,0.14)",
-                background: "rgba(255,255,255,0.05)",
-                color: "white",
-                fontWeight: 800,
-                fontSize: 12,
-              }}
-            >
+            <Link href="/feed" className="hp-btn" style={pill()}>
               Back to feed
             </Link>
           </div>
@@ -104,114 +100,138 @@ export default function PublicProfilePage() {
       </div>
 
       <div style={{ width: "100%", padding: "18px 22px 32px" }}>
-        {/* Profile header (reader view) */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 16,
-            marginBottom: 16,
-          }}
-        >
-          <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
-            <div
-              style={{
-                width: 132,
-                height: 132,
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.10)",
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
-            />
-            <div>
-              <div style={{ fontSize: 26, fontWeight: 950, letterSpacing: 0.4 }}>
-                {username.toUpperCase()}
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          {/* Profile header (reader view) */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+              marginBottom: 16,
+            }}
+          >
+            <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
+              <div
+                style={{
+                  width: 132,
+                  height: 132,
+                  borderRadius: 999,
+                  background:
+                    "linear-gradient(180deg, rgba(124,108,255,0.14), rgba(124,108,255,0.05))",
+                  border: "1px solid var(--hp-border)",
+                  boxShadow: "var(--hp-shadow-card)",
+                }}
+              />
+              <div>
+                <div style={{ fontSize: 26, fontWeight: 950, letterSpacing: 0.4 }}>
+                  {String(username).toUpperCase()}
+                </div>
+                <div style={{ marginTop: 8, fontSize: 13, color: "var(--hp-muted)" }}>
+                  12k followers • Writer
+                </div>
               </div>
-              <div style={{ marginTop: 8, fontSize: 13, opacity: 0.8 }}>
-                12k followers • Writer
-              </div>
+            </div>
+
+            {/* Reader actions: Series + Follow */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <Link
+                href={`/profile/${username}/series`}
+                className="hp-btn"
+                style={pill({ emphasize: true })}
+                title="See series"
+              >
+                Series
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => setIsFollowing((v) => !v)}
+                className="hp-btn"
+                style={pill({ active: isFollowing })}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </button>
             </div>
           </div>
 
-          {/* Reader actions: Series + Follow */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Link
-              href={`/profile/${username}/series`}
-              style={{
-                textDecoration: "none",
-                padding: "10px 16px",
-                borderRadius: 999,
-                border: "1px solid rgba(255,255,255,0.14)",
-                background: "rgba(255,255,255,0.04)",
-                color: "white",
-                fontWeight: 900,
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-              title="See series"
-            >
-              Series
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setIsFollowing((v) => !v)}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 999,
-                border: "1px solid rgba(255,255,255,0.14)",
-                background: isFollowing ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.06)",
-                color: "white",
-                fontWeight: 900,
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {isFollowing ? "Following" : "Follow"}
-            </button>
-          </div>
-        </div>
-
-        {/* Writings grid (same style as dashboard) */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            gap: 14,
-          }}
-        >
-          {cards.map((c) => (
-            <Link
-              key={c.id}
-              href={`/post/${c.id}`}
-              style={{ textDecoration: "none", color: "inherit" }}
-              title="Open post"
-            >
-              <div
-                style={{
-                  borderRadius: 14,
-                  overflow: "hidden",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  background: "rgba(255,255,255,0.03)",
-                }}
+          {/* Writings grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: 14,
+            }}
+          >
+            {cards.map((c) => (
+              <Link
+                key={c.id}
+                href={`/post/${c.id}`}
+                style={{ textDecoration: "none", color: "inherit" }}
+                title="Open post"
               >
-                <div style={{ width: "100%", aspectRatio: "16 / 10", background: "rgba(255,255,255,0.08)" }}>
-                  <img
-                    src={c.image}
-                    alt=""
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  />
-                </div>
+                <div
+                  style={{
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    border: "1px solid var(--hp-border)",
+                    background: "var(--hp-card)",
+                    boxShadow: "var(--hp-shadow-card)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      aspectRatio: "16 / 10",
+                      background:
+                        "linear-gradient(180deg, rgba(124,108,255,0.10), rgba(124,108,255,0.03))",
+                    }}
+                  >
+                    <img
+                      src={c.image}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  </div>
 
-                <div style={{ padding: 12 }}>
-                  <div style={{ fontWeight: 850, fontSize: 13, lineHeight: 1.2 }}>{c.title}</div>
+                  <div style={{ padding: 12 }}>
+                    <div style={{ fontWeight: 850, fontSize: 13, lineHeight: 1.2 }}>
+                      {c.title}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </main>
   );
+}
+
+function pill(opts?: { active?: boolean; emphasize?: boolean }): React.CSSProperties {
+  const active = !!opts?.active;
+  const emphasize = !!opts?.emphasize;
+
+  return {
+    textDecoration: "none",
+    padding: "10px 16px",
+    borderRadius: 999,
+    border: `1px solid var(--hp-border)`,
+    background: emphasize
+      ? "linear-gradient(180deg, rgba(124,108,255,0.20), rgba(124,108,255,0.10))"
+      : active
+      ? "linear-gradient(180deg, rgba(124,108,255,0.18), rgba(124,108,255,0.08))"
+      : "var(--hp-card)",
+    color: "var(--hp-text)",
+    fontWeight: 900,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    boxShadow: "var(--hp-shadow-card)",
+  };
 }

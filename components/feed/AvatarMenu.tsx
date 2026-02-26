@@ -26,16 +26,16 @@ export default function AvatarMenu({
   const itemStyle: React.CSSProperties = {
     display: "block",
     padding: "10px 12px",
-    borderRadius: 10,
+    borderRadius: 12,
     textDecoration: "none",
-    color: "#e6e6e6",
-    fontSize: 14,
-    fontWeight: 650,
-    opacity: 0.92,
+    color: "var(--hp-text)",
+    fontSize: 13,
+    fontWeight: 750,
   };
 
   const itemHover: React.CSSProperties = {
-    background: "rgba(255,255,255,0.06)",
+    background: "var(--hp-accent-soft)",
+    border: "1px solid rgba(124,108,255,0.18)",
   };
 
   return (
@@ -50,29 +50,28 @@ export default function AvatarMenu({
           width: 36,
           height: 36,
           borderRadius: "50%",
-          border: "1px solid #3a3a3a",
-          background: "rgba(255,255,255,0.06)",
+          border: "1px solid var(--hp-border)",
+          background: "var(--hp-card)",
           cursor: "pointer",
+          boxShadow: "var(--hp-shadow-card)",
         }}
       />
 
       {/* Dropdown */}
       {open ? (
         <div
+          className="hp-card"
           style={{
             position: "absolute",
             right: 0,
             top: 44,
             minWidth: 230,
-            padding: 8,
-            borderRadius: 14,
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "#0f0f0f",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.55)",
+            padding: 10,
+            borderRadius: 16,
             zIndex: 100,
           }}
         >
-          {/* ✅ FIXED: Owner "Me" profile */}
+          {/* ✅ Owner "Me" profile */}
           <HoverLink href="/me" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
             Profile
           </HoverLink>
@@ -89,7 +88,7 @@ export default function AvatarMenu({
             Analytics
           </HoverLink>
 
-          <div style={{ height: 1, background: "rgba(255,255,255,0.10)", margin: "6px 6px" }} />
+          <div style={{ height: 1, background: "var(--hp-border)", margin: "8px 6px" }} />
 
           <HoverLink href="/support" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
             Help & Support
@@ -99,7 +98,7 @@ export default function AvatarMenu({
             Settings
           </HoverLink>
 
-          <div style={{ height: 1, background: "rgba(255,255,255,0.10)", margin: "6px 6px" }} />
+          <div style={{ height: 1, background: "var(--hp-border)", margin: "8px 6px" }} />
 
           {onSignOut ? (
             <button
@@ -112,14 +111,24 @@ export default function AvatarMenu({
                 width: "100%",
                 textAlign: "left",
                 padding: "10px 12px",
-                borderRadius: 10,
-                border: "none",
+                borderRadius: 12,
+                border: "1px solid transparent",
                 background: "transparent",
-                color: "#e6e6e6",
-                fontSize: 14,
-                fontWeight: 750,
+                color: "var(--hp-text)",
+                fontSize: 13,
+                fontWeight: 900,
                 cursor: signingOut ? "not-allowed" : "pointer",
                 opacity: signingOut ? 0.55 : 0.95,
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  "rgba(255,107,107,0.10)";
+                (e.currentTarget as HTMLButtonElement).style.border =
+                  "1px solid rgba(255,107,107,0.22)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                (e.currentTarget as HTMLButtonElement).style.border = "1px solid transparent";
               }}
               title="Sign out"
             >
@@ -153,7 +162,11 @@ function HoverLink({
       onClick={onPick}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
-      style={{ ...base, ...(isHover ? hover : {}) }}
+      style={{
+        ...base,
+        border: "1px solid transparent",
+        ...(isHover ? hover : {}),
+      }}
     >
       {children}
     </Link>

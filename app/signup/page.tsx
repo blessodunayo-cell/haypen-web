@@ -13,20 +13,21 @@ export default function SignupPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const labelStyle: React.CSSProperties = {
+    display: "grid",
+    gap: 6,
+  };
+
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: 12,
     marginTop: 6,
-    borderRadius: 10,
-    border: "1px solid rgba(255,255,255,0.25)",
-    background: "rgba(255,255,255,0.06)",
-    color: "inherit",
+    borderRadius: 12,
+    border: "1px solid var(--hp-border)",
+    background: "var(--hp-card)",
+    color: "var(--hp-text)",
     outline: "none",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: "grid",
-    gap: 6,
+    boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
   };
 
   async function handleSignup(e: React.FormEvent) {
@@ -64,84 +65,115 @@ export default function SignupPage() {
   }
 
   return (
-    <main style={{ maxWidth: 480, margin: "40px auto", padding: "0 16px" }}>
-      <h1 style={{ fontSize: 32, fontWeight: 700 }}>
-        Create your Haypen account
-      </h1>
+    <main className="hp-page" style={{ display: "grid", placeItems: "center", padding: "40px 16px" }}>
+      <div className="hp-surface" style={{ width: "100%", maxWidth: 520, padding: 22 }}>
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: 0.2 }}>
+            Haypen
+          </div>
 
-      <p style={{ marginTop: 8, opacity: 0.8 }}>
-        Writers create an account to publish. Readers can explore freely.
-      </p>
+          <h1 style={{ fontSize: 28, fontWeight: 950, marginTop: 10 }}>
+            Create your account
+          </h1>
 
-      <form
-        onSubmit={handleSignup}
-        style={{ marginTop: 24, display: "grid", gap: 14 }}
-      >
-        <label style={labelStyle}>
-          <span>Display name</span>
-          <input
-            placeholder="e.g. Blessing"
-            style={inputStyle}
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            required
-          />
-        </label>
+          <p className="hp-muted" style={{ marginTop: 8, fontSize: 14, lineHeight: 1.45 }}>
+            Writers create an account to publish. Readers can explore freely.
+          </p>
+        </div>
 
-        <label style={labelStyle}>
-          <span>Email</span>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            style={inputStyle}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </label>
+        <form onSubmit={handleSignup} style={{ marginTop: 18, display: "grid", gap: 14 }}>
+          <label style={labelStyle}>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Display name</span>
+            <input
+              placeholder="e.g. Blessing"
+              style={inputStyle}
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+            />
+          </label>
 
-        <label style={labelStyle}>
-          <span>Password</span>
-          <input
-            type="password"
-            placeholder="Minimum 8 characters"
-            style={inputStyle}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
+          <label style={labelStyle}>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Email</span>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              style={inputStyle}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: 12,
-            fontWeight: 600,
-            borderRadius: 999,
-            border: "1px solid rgba(255,255,255,0.2)",
-            opacity: loading ? 0.7 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Creating..." : "Create account"}
-        </button>
+          <label style={labelStyle}>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Password</span>
+            <input
+              type="password"
+              placeholder="Minimum 8 characters"
+              style={inputStyle}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
 
-        {error ? (
-          <p style={{ marginTop: 6, color: "#ff6b6b" }}>{error}</p>
-        ) : null}
+          <button
+            type="submit"
+            disabled={loading}
+            className="hp-primary"
+            style={{
+              padding: 12,
+              fontWeight: 800,
+              border: "none",
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Creating..." : "Create account"}
+          </button>
 
-        {message ? (
-          <p style={{ marginTop: 6, opacity: 0.9 }}>{message}</p>
-        ) : null}
-      </form>
+          {error ? (
+            <div
+              style={{
+                marginTop: 4,
+                padding: "10px 12px",
+                borderRadius: 12,
+                border: "1px solid rgba(255, 107, 107, 0.35)",
+                background: "rgba(255, 107, 107, 0.08)",
+                color: "#b42318",
+                fontSize: 13,
+                fontWeight: 650,
+              }}
+            >
+              {error}
+            </div>
+          ) : null}
 
-      <p style={{ marginTop: 14, fontSize: 13, opacity: 0.75 }}>
-        Already have an account?{" "}
-        <Link href="/login" style={{ textDecoration: "underline" }}>
-          Sign in
-        </Link>
-      </p>
+          {message ? (
+            <div
+              style={{
+                marginTop: 4,
+                padding: "10px 12px",
+                borderRadius: 12,
+                border: "1px solid rgba(124, 108, 255, 0.25)",
+                background: "rgba(124, 108, 255, 0.08)",
+                color: "var(--hp-text)",
+                fontSize: 13,
+                fontWeight: 650,
+              }}
+            >
+              {message}
+            </div>
+          ) : null}
+        </form>
+
+        <p className="hp-muted" style={{ marginTop: 14, fontSize: 13 }}>
+          Already have an account?{" "}
+          <Link href="/login" style={{ textDecoration: "underline", color: "var(--hp-text)" }}>
+            Sign in
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

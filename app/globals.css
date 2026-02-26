@@ -3,6 +3,23 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Haypen Theme */
+  --hp-bg: #EEEAF7;
+  --hp-surface: #FBFAFF;
+  --hp-card: #FFFFFF;
+
+  --hp-text: #1F1F24;
+  --hp-muted: #6B6B78;
+
+  --hp-border: #DCD6F0;
+  --hp-hairline: rgba(0, 0, 0, 0.06);
+
+  --hp-accent: #7C6CFF;
+  --hp-accent-soft: rgba(124, 108, 255, 0.08);
+
+  --hp-shadow-soft: 0 10px 30px rgba(31, 31, 36, 0.08);
+  --hp-shadow-card: 0 8px 24px rgba(31, 31, 36, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,4 +33,61 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================
+   Haypen helper classes
+   ========================= */
+.hp-page {
+  background: var(--hp-bg);
+  color: var(--hp-text);
+  min-height: 100vh;
+}
+
+.hp-topnav {
+  background: rgba(238, 234, 247, 0.75);
+  border-bottom: 1px solid var(--hp-border);
+  backdrop-filter: blur(10px);
+}
+
+.hp-card {
+  background: var(--hp-card);
+  border: 1px solid var(--hp-hairline);
+  border-radius: 18px;
+  box-shadow: var(--hp-shadow-card);
+}
+
+.hp-surface {
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-border);
+  border-radius: 18px;
+  box-shadow: var(--hp-shadow-soft);
+}
+
+.hp-divider {
+  border-top: 1px solid var(--hp-border);
+}
+
+.hp-muted {
+  color: var(--hp-muted);
+}
+
+.hp-pill {
+  border: 1px solid var(--hp-border);
+  background: var(--hp-card);
+  border-radius: 999px;
+}
+
+.hp-pill:hover {
+  background: var(--hp-accent-soft);
+}
+
+.hp-primary {
+  background: #000;
+  color: #fff;
+  border-radius: 999px;
+}
+
+.hp-primary:hover {
+  background: #1f1f1f;
 }

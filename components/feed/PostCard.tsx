@@ -22,35 +22,76 @@ export default function PostCard({
   cover,
 }: PostCardProps) {
   return (
-    <div
+    <article
+      className="hp-card"
       style={{
-        border: "1px solid #e5e5e5",
-        borderRadius: 12,
+        borderRadius: 16,
         overflow: "hidden",
-        background: "white",
+        transition: "transform 160ms ease, box-shadow 160ms ease",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+        (e.currentTarget as HTMLElement).style.boxShadow =
+          "0 14px 30px rgba(17, 17, 26, 0.10)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(0px)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "var(--hp-shadow-card)";
       }}
     >
-      {cover && (
-        <Link href={`/post/${id}`}>
-          <img
-            src={cover}
-            alt=""
-            style={{ width: "100%", height: 220, objectFit: "cover" }}
-          />
+      {cover ? (
+        <Link href={`/post/${id}`} style={{ display: "block" }}>
+          <div style={{ position: "relative" }}>
+            <img
+              src={cover}
+              alt=""
+              style={{
+                width: "100%",
+                height: 220,
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+            {/* soft overlay to blend image into theme */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(to bottom, rgba(255,255,255,0.00), rgba(0,0,0,0.12))",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
         </Link>
-      )}
+      ) : null}
 
       <div style={{ padding: 16 }}>
         <Link
           href={`/post/${id}`}
-          style={{ textDecoration: "none", color: "black" }}
+          style={{ textDecoration: "none", color: "var(--hp-text)" }}
         >
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 900,
+              letterSpacing: -0.2,
+              lineHeight: 1.25,
+            }}
+          >
             {title}
           </h2>
         </Link>
 
-        <p style={{ marginTop: 10, color: "#555", fontSize: 14 }}>
+        <p
+          className="hp-muted"
+          style={{
+            marginTop: 10,
+            fontSize: 14,
+            lineHeight: 1.6,
+          }}
+        >
           {excerpt}
         </p>
 
@@ -58,21 +99,24 @@ export default function PostCard({
           style={{
             marginTop: 12,
             fontSize: 12,
-            color: "#777",
+            color: "var(--hp-muted)",
             display: "flex",
             gap: 8,
             flexWrap: "wrap",
+            alignItems: "center",
           }}
         >
-          <span style={{ fontWeight: 600, color: "black" }}>{author}</span>
-          <span>•</span>
+          <span style={{ fontWeight: 800, color: "var(--hp-text)" }}>
+            {author}
+          </span>
+          <span style={{ opacity: 0.6 }}>•</span>
           <span>{category}</span>
-          <span>•</span>
+          <span style={{ opacity: 0.6 }}>•</span>
           <span>{readTime}</span>
-          <span>•</span>
+          <span style={{ opacity: 0.6 }}>•</span>
           <span>{views.toLocaleString()} views</span>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

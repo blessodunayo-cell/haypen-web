@@ -94,8 +94,10 @@ export default function FeedPage() {
 
   if (loading) {
     return (
-      <main style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-        <p style={{ opacity: 0.85 }}>Loading…</p>
+      <main className="hp-page" style={{ display: "grid", placeItems: "center" }}>
+        <p className="hp-muted" style={{ fontWeight: 700 }}>
+          Loading…
+        </p>
       </main>
     );
   }
@@ -106,21 +108,29 @@ export default function FeedPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0b0b0b", color: "white" }}>
+    <div className="hp-page">
       <TopNav onSignOut={handleSignOut} signingOut={signingOut} />
       <FeedTabs active="for-you" />
 
       <main className={styles.wrap}>
-        <div className={styles.grid}>
-          <section className={styles.feedCol}>
-            {posts.map((p) => (
-              <PostCard key={p.id} {...p} />
-            ))}
-          </section>
+        <div
+          className="hp-surface"
+          style={{
+            padding: 16,
+            marginTop: 14,
+          }}
+        >
+          <div className={styles.grid}>
+            <section className={styles.feedCol}>
+              {posts.map((p) => (
+                <PostCard key={p.id} {...p} />
+              ))}
+            </section>
 
-          <aside>
-            <FeedRightRail />
-          </aside>
+            <aside>
+              <FeedRightRail />
+            </aside>
+          </div>
         </div>
       </main>
     </div>

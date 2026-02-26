@@ -3,6 +3,56 @@
 import Link from "next/link";
 import AvatarMenu from "./AvatarMenu";
 
+function SearchIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      style={{ display: "block" }}
+    >
+      <circle
+        cx="11"
+        cy="11"
+        r="7"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <line
+        x1="20"
+        y1="20"
+        x2="16.5"
+        y2="16.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BellIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      style={{ display: "block" }}
+    >
+      <path
+        d="M12 22a2.2 2.2 0 0 0 2.2-2.2h-4.4A2.2 2.2 0 0 0 12 22Zm7-6.2V11a7 7 0 1 0-14 0v4.8L3.2 18c-.5.6-.1 1.5.7 1.5h16.2c.8 0 1.2-.9.7-1.5L19 15.8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function TopNav({
   onSignOut,
   signingOut,
@@ -12,9 +62,8 @@ export default function TopNav({
 }) {
   return (
     <header
+      className="hp-topnav"
       style={{
-        borderBottom: "1px solid #2a2a2a",
-        background: "#0b0b0b",
         position: "sticky",
         top: 0,
         zIndex: 50,
@@ -34,10 +83,10 @@ export default function TopNav({
         <Link
           href="/feed"
           style={{
-            fontWeight: 800,
+            fontWeight: 900,
             fontSize: 18,
             textDecoration: "none",
-            color: "white",
+            color: "var(--hp-text)",
             letterSpacing: -0.2,
             marginRight: 10,
           }}
@@ -45,7 +94,7 @@ export default function TopNav({
           Haypen
         </Link>
 
-        {/* Middle: Main nav links (your old style) */}
+        {/* Middle: Main nav links */}
         <nav style={{ display: "flex", gap: 18, alignItems: "center" }}>
           <Link href="/dashboard" style={navLinkStyle}>
             Dashboard
@@ -62,8 +111,15 @@ export default function TopNav({
         </nav>
 
         {/* Right: Search + Notifications + Avatar */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 12, alignItems: "center" }}>
-          {/* Search icon */}
+        <div
+          style={{
+            marginLeft: "auto",
+            display: "flex",
+            gap: 12,
+            alignItems: "center",
+          }}
+        >
+          {/* Search */}
           <Link
             href="/search"
             title="Search"
@@ -72,20 +128,19 @@ export default function TopNav({
               width: 36,
               height: 36,
               borderRadius: 999,
-              border: "1px solid #3a3a3a",
+              border: "1px solid var(--hp-border)",
               display: "grid",
               placeItems: "center",
               textDecoration: "none",
-              color: "white",
-              fontWeight: 800,
-              lineHeight: 1,
-              opacity: 0.9,
+              color: "var(--hp-text)",
+              background: "var(--hp-card)",
+              boxShadow: "var(--hp-shadow-card)",
             }}
           >
-            🔍
+            <SearchIcon size={18} />
           </Link>
 
-          {/* Notifications icon */}
+          {/* Notifications */}
           <button
             type="button"
             title="Notifications"
@@ -95,18 +150,19 @@ export default function TopNav({
               width: 36,
               height: 36,
               borderRadius: 999,
-              border: "1px solid #3a3a3a",
-              background: "transparent",
-              color: "white",
+              border: "1px solid var(--hp-border)",
+              background: "var(--hp-card)",
+              color: "var(--hp-text)",
               cursor: "pointer",
-              fontSize: 16,
-              opacity: 0.9,
+              display: "grid",
+              placeItems: "center",
+              boxShadow: "var(--hp-shadow-card)",
             }}
           >
-            🔔
+            <BellIcon size={18} />
           </button>
 
-          {/* Avatar dropdown menu */}
+          {/* Avatar dropdown */}
           <AvatarMenu onSignOut={onSignOut} signingOut={signingOut} />
         </div>
       </div>
@@ -116,7 +172,7 @@ export default function TopNav({
 
 const navLinkStyle: React.CSSProperties = {
   textDecoration: "none",
-  color: "#bbb",
-  fontWeight: 600,
-  opacity: 0.95,
+  color: "var(--hp-text)",
+  fontWeight: 750,
+  opacity: 0.9,
 };
