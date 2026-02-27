@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
@@ -23,10 +25,12 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
 
-    const redirectTo =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/reset-password`
-        : undefined;
+    // Prefer an explicit site URL if you set it, otherwise fall back to window.origin
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (typeof window !== "undefined" ? window.location.origin : "");
+
+    const redirectTo = siteUrl ? `${siteUrl}/reset-password` : undefined;
 
     const { error } = await supabase.auth.resetPasswordForEmail(clean, {
       redirectTo,
@@ -122,7 +126,9 @@ export default function ForgotPasswordPage() {
           </button>
 
           {err ? <p style={{ color: "#ff6b6b", margin: 0 }}>{err}</p> : null}
-          {msg ? <p style={{ color: "var(--hp-muted)", margin: 0 }}>{msg}</p> : null}
+          {msg ? (
+            <p style={{ color: "var(--hp-muted)", margin: 0 }}>{msg}</p>
+          ) : null}
 
           <p style={{ fontSize: 13, color: "var(--hp-muted)", margin: 0 }}>
             Remembered it?{" "}
