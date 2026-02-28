@@ -1,6 +1,11 @@
 import { stories } from "./data/stories";
 
 export default function Home() {
+  const purpleBtn: React.CSSProperties = {
+    background: "linear-gradient(135deg, #7C6AF2, #6A5AE0)",
+    color: "#fff",
+  };
+
   return (
     <main className="min-h-screen text-gray-900" style={{ background: "#EEEAF7" }}>
       <header className="border-b border-black/10 bg-[rgba(238,234,247,0.75)] backdrop-blur">
@@ -16,7 +21,6 @@ export default function Home() {
               Write
             </a>
 
-            {/* ✅ back to your original look */}
             <a
               className="rounded-full border px-4 py-2 text-sm hover:bg-black/5"
               href="/login"
@@ -24,9 +28,10 @@ export default function Home() {
               Sign in
             </a>
 
-            {/* ✅ back to your original black pill */}
+            {/* ✅ lavender primary */}
             <a
-              className="rounded-full bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+              className="rounded-full px-4 py-2 text-sm text-white"
+              style={purpleBtn}
               href="/signup"
             >
               Get started
@@ -48,9 +53,10 @@ export default function Home() {
             </p>
 
             <div className="mt-8 flex gap-3">
-              {/* ✅ restore original */}
+              {/* ✅ lavender primary */}
               <a
-                className="rounded-full bg-black px-5 py-3 text-sm text-white hover:bg-gray-800"
+                className="rounded-full px-5 py-3 text-sm text-white"
+                style={purpleBtn}
                 href="/explore"
               >
                 Start reading
@@ -117,8 +123,10 @@ export default function Home() {
                   Create your channel and publish your first story in minutes.
                 </p>
 
+                {/* ✅ lavender primary */}
                 <a
-                  className="mt-4 block w-full rounded-full bg-black px-4 py-2 text-center text-sm text-white hover:bg-gray-800"
+                  className="mt-4 block w-full rounded-full px-4 py-2 text-center text-sm text-white"
+                  style={purpleBtn}
                   href="/login"
                 >
                   Create a channel
