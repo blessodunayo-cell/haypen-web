@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { supabase } from "../lib/supabase";
+import { createClient } from "@/app/lib/supabase/client";
 
 export default function SignupPage() {
   const [displayName, setDisplayName] = useState("");
@@ -42,6 +42,8 @@ export default function SignupPage() {
 
     setLoading(true);
 
+    const supabase = createClient();
+
     const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -65,7 +67,10 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="hp-page" style={{ display: "grid", placeItems: "center", padding: "40px 16px" }}>
+    <main
+      className="hp-page"
+      style={{ display: "grid", placeItems: "center", padding: "40px 16px" }}
+    >
       <div className="hp-surface" style={{ width: "100%", maxWidth: 520, padding: 22 }}>
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: 0.2 }}>

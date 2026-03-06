@@ -1,64 +1,71 @@
-import Link from "next/link";
+import { createDraftPost } from "./actions";
+import CoverUpload from "./CoverUpload";
 
 export default function WritePage() {
-  const boxStyle: React.CSSProperties = {
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.04)",
-    borderRadius: 16,
-    padding: 18,
-  };
-
-  const pillStyle: React.CSSProperties = {
-    padding: "10px 16px",
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.2)",
-    textDecoration: "none",
-    fontWeight: 600,
-    display: "inline-block",
-  };
-
   return (
-    <main style={{ maxWidth: 780, margin: "40px auto", padding: "0 16px" }}>
-      <h1 style={{ fontSize: 32, fontWeight: 700 }}>Write</h1>
-      <p style={{ marginTop: 8, opacity: 0.8 }}>
-        Create a post and publish it on Haypen.
-      </p>
+    <div className="min-h-screen bg-[#ebe6f7] px-6 py-10">
+      <div className="mx-auto max-w-3xl">
 
-      <div style={{ marginTop: 24, display: "grid", gap: 14 }}>
-        <div style={boxStyle}>
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>
-            Your Haypen Channel
-          </h2>
-          <p style={{ marginTop: 6, opacity: 0.85 }}>
-            Your Channel is where readers follow you and read everything you publish.
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-gray-900">
+            Write a new story
+          </h1>
+          <p className="mt-1 text-gray-600">
+            Start your draft. You'll choose category and publish next.
           </p>
-
-          <p style={{ marginTop: 10, fontSize: 14, opacity: 0.8 }}>
-            To start writing, create your account and set up your Channel.
-          </p>
-
-          <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link href="/signup" style={pillStyle}>
-              Create account
-            </Link>
-
-            <Link href="/explore" style={{ ...pillStyle, opacity: 0.9 }}>
-              Explore posts
-            </Link>
-          </div>
         </div>
 
-        <div style={boxStyle}>
-          <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-            Writing guidelines
-          </h3>
-          <ul style={{ marginTop: 10, opacity: 0.85, lineHeight: 1.8 }}>
-            <li>Each post is published independently.</li>
-            <li>Stories and articles must meet minimum word requirements.</li>
-            <li>Writers are responsible for their content.</li>
-          </ul>
+        {/* Writing Card */}
+        <div className="rounded-3xl border border-gray-200 bg-[#f3f3f3] p-8 shadow-sm">
+
+          <form action={createDraftPost} className="space-y-6">
+
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Title
+              </label>
+
+              <input
+                name="title"
+                placeholder="Write your title…"
+                required
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-[15px] outline-none focus:ring-2 focus:ring-purple-400"
+              />
+            </div>
+
+            {/* Story */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Story
+              </label>
+
+              <textarea
+                name="content"
+                placeholder="Start writing your story here..."
+                required
+                className="w-full min-h-[360px] rounded-xl border border-gray-300 bg-white px-4 py-3 text-[15px] outline-none focus:ring-2 focus:ring-purple-400"
+              />
+            </div>
+
+            {/* Cover Upload */}
+            <CoverUpload name="cover_url" />
+
+            {/* Button */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 py-3 text-white font-medium shadow-sm hover:opacity-95"
+              >
+                Continue
+              </button>
+            </div>
+
+          </form>
+
         </div>
       </div>
-    </main>
+    </div>
   );
 }

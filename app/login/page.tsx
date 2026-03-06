@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { createClient } from "@/app/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,6 +35,8 @@ export default function LoginPage() {
     e.preventDefault();
     setMsg(null);
     setLoading(true);
+
+    const supabase = createClient();
 
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
