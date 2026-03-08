@@ -29,18 +29,8 @@ export default async function PostPage(props: {
     <div className="min-h-screen bg-[#ebe6f7] px-6 py-10">
       <div className="mx-auto max-w-3xl">
         <div className="rounded-3xl border border-gray-200 bg-[#f3f3f3] p-8 shadow-sm">
-          {(post as any).cover_url ? (
-            <div className="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-              <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
-                <img
-                  src={(post as any).cover_url}
-                  alt={(post as any).title ?? "Cover"}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-          ) : null}
 
+          {/* Meta */}
           <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-gray-600">
             <span>
               {new Date((post as any).published_at).toLocaleDateString()}
@@ -55,13 +45,29 @@ export default async function PostPage(props: {
             ) : null}
           </div>
 
+          {/* Title */}
           <h1 className="text-3xl font-semibold text-gray-900">
             {(post as any).title}
           </h1>
 
+          {/* Content */}
           <div className="mt-6 whitespace-pre-wrap leading-8 text-gray-900">
             {(post as any).content}
           </div>
+
+          {/* Cover image BELOW story */}
+          {(post as any).cover_url ? (
+            <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+              <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
+                <img
+                  src={(post as any).cover_url}
+                  alt={(post as any).title ?? "Cover"}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
+          ) : null}
+
         </div>
       </div>
     </div>

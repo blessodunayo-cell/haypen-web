@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/app/lib/supabase/client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 export default function CoverUpload({ name = "cover_url" }: { name?: string }) {
   const [uploading, setUploading] = useState(false);
@@ -15,27 +12,35 @@ export default function CoverUpload({ name = "cover_url" }: { name?: string }) {
 
   async function onPick(file: File | null) {
     if (!file) return;
+
     setError(null);
     setUploading(true);
 
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `covers/${crypto.randomUUID()}.${ext}`;
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const safeExt = ["jpg", "jpeg", "png", "webp"].includes(ext) ? ext : "jpg";
+      const path = `covers/${crypto.randomUUID()}.${safeExt}`;
 
       const { error: upErr } = await supabase.storage
         .from("post-covers")
         .upload(path, file, {
           cacheControl: "3600",
           upsert: false,
-          contentType: file.type,
+          contentType: file.type || `image/${safeExt}`,
         });
 
       if (upErr) throw upErr;
 
       const { data } = supabase.storage.from("post-covers").getPublicUrl(path);
+
+      if (!data?.publicUrl) {
+        throw new Error("Could not get uploaded image URL.");
+      }
+
       setUrl(data.publicUrl);
     } catch (e: any) {
       setError(e?.message ?? "Upload failed");
+      setUrl(null);
     } finally {
       setUploading(false);
     }
@@ -54,7 +59,7 @@ export default function CoverUpload({ name = "cover_url" }: { name?: string }) {
           {uploading ? "Uploading..." : "Upload image"}
           <input
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp"
             className="hidden"
             onChange={(e) => onPick(e.target.files?.[0] ?? null)}
             disabled={uploading}
@@ -70,11 +75,9 @@ export default function CoverUpload({ name = "cover_url" }: { name?: string }) {
 
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
 
-      {/* Preview like “Facebook” */}
       {url ? (
         <div className="mt-3 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50">
           <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={url}
               alt="Cover preview"
