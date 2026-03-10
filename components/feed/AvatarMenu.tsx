@@ -71,30 +71,59 @@ export default function AvatarMenu({
             zIndex: 100,
           }}
         >
-          {/* ✅ Owner "Me" profile */}
-          <HoverLink href="/me" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
+          <HoverLink
+            href="/me"
+            base={itemStyle}
+            hover={itemHover}
+            onPick={() => setOpen(false)}
+          >
             Profile
           </HoverLink>
 
-          <HoverLink href="/series" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
+          <HoverLink
+            href="/dashboard/my-series"
+            base={itemStyle}
+            hover={itemHover}
+            onPick={() => setOpen(false)}
+          >
             My Series
           </HoverLink>
 
-          <HoverLink href="/earnings" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
+          <HoverLink
+            href="/earnings"
+            base={itemStyle}
+            hover={itemHover}
+            onPick={() => setOpen(false)}
+          >
             Earnings
           </HoverLink>
 
-          <HoverLink href="/analytics" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
+          <HoverLink
+            href="/dashboard/analytics"
+            base={itemStyle}
+            hover={itemHover}
+            onPick={() => setOpen(false)}
+          >
             Analytics
           </HoverLink>
 
           <div style={{ height: 1, background: "var(--hp-border)", margin: "8px 6px" }} />
 
-          <HoverLink href="/support" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
+          <HoverLink
+            href="/support"
+            base={itemStyle}
+            hover={itemHover}
+            onPick={() => setOpen(false)}
+          >
             Help & Support
           </HoverLink>
 
-          <HoverLink href="/settings" base={itemStyle} hover={itemHover} onPick={() => setOpen(false)}>
+          <HoverLink
+            href="/settings"
+            base={itemStyle}
+            hover={itemHover}
+            onPick={() => setOpen(false)}
+          >
             Settings
           </HoverLink>
 
