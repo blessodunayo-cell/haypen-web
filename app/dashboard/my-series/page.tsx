@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 type Series = {
   id: string;
   title: string;
+  slug: string;
   cover_url: string | null;
 };
 
@@ -34,7 +35,7 @@ export default function MySeriesPage() {
 
       const { data, error } = await supabase
         .from("series")
-        .select("id, title, cover_url")
+        .select("id, title, slug, cover_url")
         .eq("author_id", user.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
@@ -159,7 +160,7 @@ export default function MySeriesPage() {
             series.map((s) => (
               <div
                 key={s.id}
-                onClick={() => router.push(`/series/${s.id}`)}
+                onClick={() => router.push(`/series/${s.slug}`)}
                 style={{
                   width: 270,
                   borderRadius: 18,
