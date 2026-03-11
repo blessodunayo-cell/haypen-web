@@ -2,7 +2,6 @@ import PublishForm from "./PublishForm";
 import { createClient } from "@/app/lib/supabase/server";
 
 type Item = { id: string; name: string };
-type SeriesItem = { id: string; title: string };
 
 export default async function PublishPage(props: {
   searchParams?:
@@ -30,21 +29,13 @@ export default async function PublishPage(props: {
 
   const supabase = await createClient();
 
-  const [
-    { data: categories, error: catErr },
-    { data: series, error: serErr },
-  ] = await Promise.all([
-    supabase
-      .from("categories")
-      .select("id,name")
-      .is("parent_id", null)
-      .order("name"),
-
-    supabase.from("series").select("id,title").order("title"),
-  ]);
+  const { data: categories, error: catErr } = await supabase
+    .from("categories")
+    .select("id,name")
+    .is("parent_id", null)
+    .order("name");
 
   if (catErr) console.log("Categories error:", catErr.message);
-  if (serErr) console.log("Series error:", serErr.message);
 
   return (
     <main className="hp-page" style={{ padding: "28px 16px" }}>
@@ -56,13 +47,12 @@ export default async function PublishPage(props: {
           Publish story
         </h1>
         <p className="hp-muted" style={{ marginBottom: 16 }}>
-          Add category, subcategories, series, then publish.
+          Add category and subcategories, then publish.
         </p>
 
         <PublishForm
           postId={postId}
           categories={(categories ?? []) as Item[]}
-          series={(series ?? []) as SeriesItem[]}
         />
       </div>
     </main>

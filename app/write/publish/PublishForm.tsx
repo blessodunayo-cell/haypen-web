@@ -4,21 +4,17 @@ import { useEffect, useState } from "react";
 import { publishPost } from "../actions";
 
 type Item = { id: string; name: string };
-type SeriesItem = { id: string; title: string };
 
 export default function PublishForm({
   postId,
   categories,
-  series,
 }: {
   postId: string;
   categories: Item[];
-  series: SeriesItem[];
 }) {
   const [categoryId, setCategoryId] = useState("");
   const [subcategories, setSubcategories] = useState<Item[]>([]);
   const [loadingSubs, setLoadingSubs] = useState(false);
-  const [seriesChoice, setSeriesChoice] = useState<"no" | "yes">("no");
 
   useEffect(() => {
     let cancelled = false;
@@ -115,59 +111,6 @@ export default function PublishForm({
             Yes
           </label>
         </div>
-      </div>
-
-      {/* Series */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Is this part of a series?
-        </label>
-
-        <div className="flex gap-4 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm">
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="radio"
-              name="seriesChoice"
-              value="no"
-              checked={seriesChoice === "no"}
-              onChange={() => setSeriesChoice("no")}
-            />
-            No
-          </label>
-
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="radio"
-              name="seriesChoice"
-              value="yes"
-              checked={seriesChoice === "yes"}
-              onChange={() => setSeriesChoice("yes")}
-            />
-            Yes
-          </label>
-        </div>
-
-        {seriesChoice === "yes" ? (
-          <div className="mt-3">
-            <select
-              name="seriesId"
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-[15px] outline-none"
-              defaultValue=""
-              required
-            >
-              <option value="">Select a series…</option>
-              {series.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.title}
-                </option>
-              ))}
-            </select>
-
-            <p className="mt-2 text-xs text-gray-500">
-              Next: we’ll add “Create new series” here.
-            </p>
-          </div>
-        ) : null}
       </div>
 
       {/* Publish */}
