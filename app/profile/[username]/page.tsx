@@ -14,8 +14,8 @@ export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
   const username = params?.username ?? "writer";
 
-  // dummy follow state (later: supabase user_follows)
-  const [isFollowing, setIsFollowing] = useState(false);
+  // dummy subscribe state (later: supabase user_subscriptions)
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   const imagePool = useMemo(
     () => [
@@ -92,8 +92,9 @@ export default function PublicProfilePage() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Link href="/feed" className="hp-btn" style={pill()}>
-              Back to feed
+            <Link href="/feed" className="hp-btn" style={softPill()}>
+              <span style={{ fontSize: 14, lineHeight: 1 }}>←</span>
+              <span>Back</span>
             </Link>
           </div>
         </div>
@@ -128,17 +129,17 @@ export default function PublicProfilePage() {
                   {String(username).toUpperCase()}
                 </div>
                 <div style={{ marginTop: 8, fontSize: 13, color: "var(--hp-muted)" }}>
-                  12k followers • Writer
+                  0 subscribers • Writer
                 </div>
               </div>
             </div>
 
-            {/* Reader actions: Series + Follow */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Reader actions: Series + Subscribe */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Link
                 href={`/profile/${username}/series`}
                 className="hp-btn"
-                style={pill({ emphasize: true })}
+                style={softPill({ emphasize: true })}
                 title="See series"
               >
                 Series
@@ -146,11 +147,11 @@ export default function PublicProfilePage() {
 
               <button
                 type="button"
-                onClick={() => setIsFollowing((v) => !v)}
+                onClick={() => setIsSubscribed((v) => !v)}
                 className="hp-btn"
-                style={pill({ active: isFollowing })}
+                style={softPill({ active: isSubscribed })}
               >
-                {isFollowing ? "Following" : "Follow"}
+                {isSubscribed ? "Subscribed" : "Subscribe"}
               </button>
             </div>
           </div>
@@ -214,24 +215,34 @@ export default function PublicProfilePage() {
   );
 }
 
-function pill(opts?: { active?: boolean; emphasize?: boolean }): React.CSSProperties {
+function softPill(opts?: {
+  active?: boolean;
+  emphasize?: boolean;
+}): React.CSSProperties {
   const active = !!opts?.active;
   const emphasize = !!opts?.emphasize;
 
   return {
     textDecoration: "none",
-    padding: "10px 16px",
+    padding: "9px 14px",
     borderRadius: 999,
-    border: `1px solid var(--hp-border)`,
+    border: "1px solid var(--hp-border)",
     background: emphasize
-      ? "linear-gradient(180deg, rgba(124,108,255,0.20), rgba(124,108,255,0.10))"
+      ? "linear-gradient(180deg, rgba(124,108,255,0.14), rgba(124,108,255,0.06))"
       : active
-      ? "linear-gradient(180deg, rgba(124,108,255,0.18), rgba(124,108,255,0.08))"
-      : "var(--hp-card)",
+      ? "linear-gradient(180deg, rgba(124,108,255,0.12), rgba(124,108,255,0.05))"
+      : "rgba(255,255,255,0.72)",
     color: "var(--hp-text)",
-    fontWeight: 900,
+    fontWeight: 700,
+    fontSize: 14,
     cursor: "pointer",
     whiteSpace: "nowrap",
-    boxShadow: "var(--hp-shadow-card)",
+    boxShadow: "0 6px 18px rgba(17, 24, 39, 0.06)",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+    transition: "all 0.18s ease",
   };
 }
