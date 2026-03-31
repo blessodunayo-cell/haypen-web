@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import AvatarMenu from "@/components/feed/AvatarMenu"; // adjust if needed
 
@@ -23,76 +23,83 @@ function BellIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-type DummyCard = {
+type PostCard = {
   id: string;
   title: string;
-  image: string;
+  cover_image?: string | null;
+  slug?: string | null;
 };
 
 export default function DashboardPage() {
-  // ✅ Monetization toggle removed completely
-
-  // Pagination / "nearly infinite" catalog
   const [page, setPage] = useState(1);
-  const pageSize = 16; // 16 cards per page like your current grid
+  const pageSize = 20;
 
-  // Safe rotating image pool (reduces broken images)
-  const imagePool = useMemo(
-    () => [
-      "https://images.unsplash.com/photo-1520975958225-5b95b3d64f75?auto=format&fit=crop&w=1200&q=60",
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60",
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=60",
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60",
-      "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&q=60",
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=60",
-      "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=1200&q=60",
-      "https://images.unsplash.com/photo-1496307653780-42ee777d4833?auto=format&fit=crop&w=1200&q=60",
-    ],
-    []
-  );
+  const [posts, setPosts] = useState<PostCard[]>([]);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [subscribers] = useState(0);
+  const [penName] = useState("GOLDEN PEN");
+  const [loading, setLoading] = useState(true);
 
-  // “Infinity” dummy dataset (enough for Page 1–50 vibes)
-  const cards: DummyCard[] = useMemo(() => {
-    const titles = [
-      "The Circle of Life",
-      "The Gods Are to Blame",
-      "No Escape",
-      "Life Has No...",
-      "Home to the Heart",
-      "Drug Abuse",
-      "Is It Legit?",
-      "Hot Gist of...",
-      "Nawa — Getting Better?",
-      "How to Mind",
-      "Mindset?",
-      "Beat It Down",
-      "The Hades of Lust",
-      "Broken Star 94",
-      "Broken Star 93",
-      "Broken Star 92",
-    ];
+  const totalPages = Math.max(1, Math.ceil(totalPosts / pageSize));
 
-    const total = 16 * 60; // 60 pages if you want (960 cards dummy)
-    return Array.from({ length: total }).map((_, i) => {
-      const title = titles[i % titles.length];
-      const episode = i + 1;
+  useEffect(() => {
+    let isMounted = true;
 
-      // Make repeated content feel like “real back pages”
-      const fancyTitle = title.startsWith("Broken Star")
-        ? `Broken Star ${100 - ((episode % 100) || 1)}`
-        : title;
+    async function fetchPosts() {
+      try {
+        setLoading(true);
 
-      return {
-        id: String(i + 1),
-        title: fancyTitle,
-        image: imagePool[i % imagePool.length],
-      };
-    });
-  }, [imagePool]);
+        // TODO:
+        // Replace this with your real fetch logic.
+        // Example idea:
+        // const from = (page - 1) * pageSize;
+        // const to = from + pageSize - 1;
+        //
+        // const { data, count, error } = await supabase
+        //   .from("posts")
+        //   .select("id, title, cover_image, slug", { count: "exact" })
+        //   .eq("status", "published")
+        //   .order("created_at", { ascending: false })
+        //   .range(from, to);
+        //
+        // if (error) throw error;
+        //
+        // if (isMounted) {
+        //   setPosts(data ?? []);
+        //   setTotalPosts(count ?? 0);
+        // }
 
-  const visibleCards = cards.slice(0, page * pageSize);
-  const maxPages = Math.ceil(cards.length / pageSize);
-  const canLoadMore = page < maxPages;
+        if (isMounted) {
+          setPosts([]);
+          setTotalPosts(0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard posts:", error);
+        if (isMounted) {
+          setPosts([]);
+          setTotalPosts(0);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchPosts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page]);
+
+  const canGoPrev = page > 1;
+  const canGoNext = page < totalPages;
+
+  const emptyMessage = useMemo(() => {
+    if (loading) return "Loading your posts...";
+    return "No published posts yet.";
+  }, [loading]);
 
   return (
     <main
@@ -102,7 +109,7 @@ export default function DashboardPage() {
         color: "var(--hp-text)",
       }}
     >
-      {/* TOP NAV (Dashboard-specific) */}
+      {/* TOP NAV */}
       <div
         className="hp-topnav"
         style={{
@@ -123,14 +130,12 @@ export default function DashboardPage() {
             margin: "0 auto",
           }}
         >
-          {/* Left: Haypen bold */}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: 0.2 }}>
               Haypen
             </div>
           </div>
 
-          {/* Right: Write, Notifications, Avatar dropdown */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Link
               href="/write"
@@ -148,12 +153,12 @@ export default function DashboardPage() {
                 boxShadow: "var(--hp-shadow-card)",
               }}
             >
-              Write
+              Create a post
             </Link>
 
             <button
               type="button"
-              onClick={() => alert("Notifications (dummy)")}
+              onClick={() => alert("Notifications")}
               className="hp-btn"
               style={{
                 width: 38,
@@ -181,13 +186,13 @@ export default function DashboardPage() {
       {/* BODY */}
       <div style={{ width: "100%", padding: "18px 22px 32px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-          {/* Big avatar section */}
+          {/* Profile section */}
           <div
             style={{
               display: "flex",
               gap: 18,
               alignItems: "center",
-              marginBottom: 16,
+              marginBottom: 20,
             }}
           >
             <div
@@ -204,101 +209,172 @@ export default function DashboardPage() {
 
             <div>
               <div style={{ fontSize: 26, fontWeight: 950, letterSpacing: 0.4 }}>
-                GOLDEN PEN
-              </div>
-              <div style={{ marginTop: 8, fontSize: 13, color: "var(--hp-muted)" }}>
-                12k followers
+                {penName}
               </div>
 
-              <div style={{ marginTop: 10, fontSize: 12, color: "var(--hp-muted)" }}>
-                Page {page} of {maxPages}
+              <div style={{ marginTop: 8, fontSize: 13, color: "var(--hp-muted)" }}>
+                {subscribers} subscribers
               </div>
             </div>
           </div>
 
-          {/* Grid of story cards */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-              gap: 14,
-            }}
-          >
-            {visibleCards.map((c) => (
-              <div
-                key={c.id}
-                style={{
-                  borderRadius: 16,
-                  overflow: "hidden",
-                  border: "1px solid var(--hp-border)",
-                  background: "var(--hp-card)",
-                  boxShadow: "var(--hp-shadow-card)",
-                  transition: "transform 120ms ease",
-                }}
-              >
-                <div
-                  style={{
-                    width: "100%",
-                    aspectRatio: "16 / 10",
-                    background:
-                      "linear-gradient(180deg, rgba(124,108,255,0.10), rgba(124,108,255,0.03))",
-                  }}
-                >
-                  <img
-                    src={c.image}
-                    alt=""
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                </div>
-
-                <div style={{ padding: 12 }}>
-                  <div style={{ fontWeight: 850, fontSize: 13, lineHeight: 1.2 }}>
-                    {c.title}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Load more */}
-          <div style={{ marginTop: 18, display: "flex", justifyContent: "center" }}>
-            <button
-              type="button"
-              disabled={!canLoadMore}
-              onClick={() => setPage((p) => p + 1)}
-              className="hp-btn"
+          {/* Posts grid */}
+          {posts.length > 0 ? (
+            <div
               style={{
-                padding: "10px 16px",
-                borderRadius: 999,
-                border: "1px solid var(--hp-border)",
-                background: "var(--hp-card)",
-                color: "var(--hp-text)",
-                fontWeight: 900,
-                cursor: canLoadMore ? "pointer" : "not-allowed",
-                opacity: canLoadMore ? 1 : 0.6,
-                boxShadow: "var(--hp-shadow-card)",
+                display: "grid",
+                gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                gap: 14,
               }}
             >
-              {canLoadMore ? "Load more" : "No more posts"}
-            </button>
-          </div>
+              {posts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={post.slug ? `/post/${post.slug}` : "#"}
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  <div
+                    style={{
+                      borderRadius: 16,
+                      overflow: "hidden",
+                      border: "1px solid var(--hp-border)",
+                      background: "var(--hp-card)",
+                      boxShadow: "var(--hp-shadow-card)",
+                      transition: "transform 120ms ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "100%",
+                        aspectRatio: "16 / 10",
+                        background: post.cover_image
+                          ? "transparent"
+                          : "linear-gradient(180deg, rgba(124,108,255,0.10), rgba(124,108,255,0.03))",
+                      }}
+                    >
+                      {post.cover_image ? (
+                        <img
+                          src={post.cover_image}
+                          alt={post.title}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            display: "grid",
+                            placeItems: "center",
+                            fontSize: 12,
+                            color: "var(--hp-muted)",
+                          }}
+                        >
+                          No cover image
+                        </div>
+                      )}
+                    </div>
 
-          {/* Small hint text */}
-          <div
-            style={{
-              marginTop: 10,
-              textAlign: "center",
-              fontSize: 12,
-              color: "var(--hp-muted)",
-            }}
-          >
-            You can replace these cards with real posts later — no stress.
-          </div>
+                    <div style={{ padding: 12 }}>
+                      <div style={{ fontWeight: 850, fontSize: 13, lineHeight: 1.2 }}>
+                        {post.title}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div
+              style={{
+                minHeight: 260,
+                borderRadius: 18,
+                border: "1px solid var(--hp-border)",
+                background: "var(--hp-card)",
+                boxShadow: "var(--hp-shadow-card)",
+                display: "grid",
+                placeItems: "center",
+                textAlign: "center",
+                padding: 24,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800 }}>{emptyMessage}</div>
+                {!loading && (
+                  <div
+                    style={{
+                      marginTop: 8,
+                      fontSize: 13,
+                      color: "var(--hp-muted)",
+                    }}
+                  >
+                    Your published posts will appear here.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Real pagination */}
+          {!loading && totalPosts > 0 && (
+            <div
+              style={{
+                marginTop: 22,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setPage((p) => p - 1)}
+                disabled={!canGoPrev}
+                className="hp-btn"
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: 999,
+                  border: "1px solid var(--hp-border)",
+                  background: "var(--hp-card)",
+                  color: "var(--hp-text)",
+                  fontWeight: 900,
+                  cursor: canGoPrev ? "pointer" : "not-allowed",
+                  opacity: canGoPrev ? 1 : 0.6,
+                  boxShadow: "var(--hp-shadow-card)",
+                }}
+              >
+                Previous
+              </button>
+
+              <div style={{ fontSize: 13, color: "var(--hp-muted)", fontWeight: 700 }}>
+                Page {page} of {totalPages}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={!canGoNext}
+                className="hp-btn"
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: 999,
+                  border: "1px solid var(--hp-border)",
+                  background: "var(--hp-card)",
+                  color: "var(--hp-text)",
+                  fontWeight: 900,
+                  cursor: canGoNext ? "pointer" : "not-allowed",
+                  opacity: canGoNext ? 1 : 0.6,
+                  boxShadow: "var(--hp-shadow-card)",
+                }}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </main>
