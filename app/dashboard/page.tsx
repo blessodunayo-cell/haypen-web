@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import AvatarMenu from "@/components/feed/AvatarMenu"; // adjust if needed
+import AvatarMenu from "@/components/feed/AvatarMenu";
+import { createClient } from "@/app/lib/supabase/client";
 
 function BellIcon({ size = 18 }: { size?: number }) {
   return (
@@ -31,6 +32,8 @@ type PostCard = {
 };
 
 export default function DashboardPage() {
+  const supabase = createClient();
+
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
@@ -49,32 +52,44 @@ export default function DashboardPage() {
       try {
         setLoading(true);
 
-        // TODO:
-        // Replace this with your real fetch logic.
-        // Example idea:
-        // const from = (page - 1) * pageSize;
-        // const to = from + pageSize - 1;
-        //
-        // const { data, count, error } = await supabase
-        //   .from("posts")
-        //   .select("id, title, cover_image, slug", { count: "exact" })
-        //   .eq("status", "published")
-        //   .order("created_at", { ascending: false })
-        //   .range(from, to);
-        //
-        // if (error) throw error;
-        //
-        // if (isMounted) {
-        //   setPosts(data ?? []);
-        //   setTotalPosts(count ?? 0);
-        // }
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          console.error("Failed to get current user:", userError);
+          window.location.href = "/login";
+          return;
+        }
+
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        const { data, count, error } = await supabase
+          .from("posts")
+          .select("id, title, cover_url, slug", { count: "exact" })
+          .eq("author_id", user.id)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .range(from, to);
+
+        if (error) throw error;
 
         if (isMounted) {
-          setPosts([]);
-          setTotalPosts(0);
+          const mappedPosts: PostCard[] = (data ?? []).map((post) => ({
+            id: post.id,
+            title: post.title,
+            cover_image: post.cover_url,
+            slug: post.slug,
+          }));
+
+          setPosts(mappedPosts);
+          setTotalPosts(count ?? 0);
         }
       } catch (error) {
         console.error("Failed to fetch dashboard posts:", error);
+
         if (isMounted) {
           setPosts([]);
           setTotalPosts(0);
@@ -91,7 +106,7 @@ export default function DashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [page]);
+  }, [page, supabase]);
 
   const canGoPrev = page > 1;
   const canGoNext = page < totalPages;
@@ -109,7 +124,6 @@ export default function DashboardPage() {
         color: "var(--hp-text)",
       }}
     >
-      {/* TOP NAV */}
       <div
         className="hp-topnav"
         style={{
@@ -183,10 +197,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* BODY */}
       <div style={{ width: "100%", padding: "18px 22px 32px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-          {/* Profile section */}
           <div
             style={{
               display: "flex",
@@ -218,7 +230,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Posts grid */}
           {posts.length > 0 ? (
             <div
               style={{
@@ -319,7 +330,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Real pagination */}
           {!loading && totalPosts > 0 && (
             <div
               style={{

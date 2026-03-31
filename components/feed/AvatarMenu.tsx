@@ -2,16 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/app/lib/supabase/client";
 
-export default function AvatarMenu({
-  onSignOut,
-  signingOut,
-}: {
-  onSignOut?: () => void;
-  signingOut?: boolean;
-}) {
+export default function AvatarMenu() {
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -19,9 +18,31 @@ export default function AvatarMenu({
       if (wrapRef.current.contains(e.target as Node)) return;
       setOpen(false);
     }
+
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
+
+  async function handleSignOut() {
+    try {
+      setSigningOut(true);
+      setOpen(false);
+
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        console.error("Sign out failed:", error.message);
+        return;
+      }
+
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Unexpected sign out error:", error);
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   const itemStyle: React.CSSProperties = {
     display: "block",
@@ -40,7 +61,6 @@ export default function AvatarMenu({
 
   return (
     <div ref={wrapRef} style={{ position: "relative" }}>
-      {/* Avatar button */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -57,7 +77,6 @@ export default function AvatarMenu({
         }}
       />
 
-      {/* Dropdown */}
       {open ? (
         <div
           className="hp-card"
@@ -107,7 +126,13 @@ export default function AvatarMenu({
             Analytics
           </HoverLink>
 
-          <div style={{ height: 1, background: "var(--hp-border)", margin: "8px 6px" }} />
+          <div
+            style={{
+              height: 1,
+              background: "var(--hp-border)",
+              margin: "8px 6px",
+            }}
+          />
 
           <HoverLink
             href="/support"
@@ -127,43 +152,43 @@ export default function AvatarMenu({
             Settings
           </HoverLink>
 
-          <div style={{ height: 1, background: "var(--hp-border)", margin: "8px 6px" }} />
+          <div
+            style={{
+              height: 1,
+              background: "var(--hp-border)",
+              margin: "8px 6px",
+            }}
+          />
 
-          {onSignOut ? (
-            <button
-              onClick={() => {
-                setOpen(false);
-                onSignOut();
-              }}
-              disabled={!!signingOut}
-              style={{
-                width: "100%",
-                textAlign: "left",
-                padding: "10px 12px",
-                borderRadius: 12,
-                border: "1px solid transparent",
-                background: "transparent",
-                color: "var(--hp-text)",
-                fontSize: 13,
-                fontWeight: 900,
-                cursor: signingOut ? "not-allowed" : "pointer",
-                opacity: signingOut ? 0.55 : 0.95,
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "rgba(255,107,107,0.10)";
-                (e.currentTarget as HTMLButtonElement).style.border =
-                  "1px solid rgba(255,107,107,0.22)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                (e.currentTarget as HTMLButtonElement).style.border = "1px solid transparent";
-              }}
-              title="Sign out"
-            >
-              {signingOut ? "Signing out..." : "Sign out"}
-            </button>
-          ) : null}
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "10px 12px",
+              borderRadius: 12,
+              border: "1px solid transparent",
+              background: "transparent",
+              color: "var(--hp-text)",
+              fontSize: 13,
+              fontWeight: 900,
+              cursor: signingOut ? "not-allowed" : "pointer",
+              opacity: signingOut ? 0.55 : 0.95,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255,107,107,0.10)";
+              e.currentTarget.style.border = "1px solid rgba(255,107,107,0.22)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.border = "1px solid transparent";
+            }}
+            title="Sign out"
+          >
+            {signingOut ? "Signing out..." : "Sign out"}
+          </button>
         </div>
       ) : null}
     </div>
