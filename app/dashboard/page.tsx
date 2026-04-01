@@ -24,11 +24,13 @@ function BellIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-type PostCard = {
+type DashboardItem = {
   id: string;
   title: string;
   cover_image?: string | null;
   slug?: string | null;
+  created_at: string;
+  type: "post" | "series";
 };
 
 export default function DashboardPage() {
@@ -37,18 +39,15 @@ export default function DashboardPage() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  const [posts, setPosts] = useState<PostCard[]>([]);
-  const [totalPosts, setTotalPosts] = useState(0);
+  const [items, setItems] = useState<DashboardItem[]>([]);
   const [subscribers] = useState(0);
   const [penName] = useState("GOLDEN PEN");
   const [loading, setLoading] = useState(true);
 
-  const totalPages = Math.max(1, Math.ceil(totalPosts / pageSize));
-
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchPosts() {
+    async function fetchDashboardContent() {
       try {
         setLoading(true);
 
@@ -63,36 +62,55 @@ export default function DashboardPage() {
           return;
         }
 
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
+        const [postsResult, seriesResult] = await Promise.all([
+          supabase
+            .from("posts")
+            .select("id, title, cover_url, slug, created_at")
+            .eq("author_id", user.id)
+            .eq("is_active", true),
 
-        const { data, count, error } = await supabase
-          .from("posts")
-          .select("id, title, cover_url, slug", { count: "exact" })
-          .eq("author_id", user.id)
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .range(from, to);
+          supabase
+            .from("series")
+            .select("id, title, cover_url, slug, created_at")
+            .eq("author_id", user.id)
+            .eq("is_active", true),
+        ]);
 
-        if (error) throw error;
+        if (postsResult.error) throw postsResult.error;
+        if (seriesResult.error) throw seriesResult.error;
+
+        const mappedPosts: DashboardItem[] = (postsResult.data ?? []).map((post) => ({
+          id: post.id,
+          title: post.title,
+          cover_image: post.cover_url,
+          slug: post.slug,
+          created_at: post.created_at,
+          type: "post",
+        }));
+
+        const mappedSeries: DashboardItem[] = (seriesResult.data ?? []).map((series) => ({
+          id: series.id,
+          title: series.title,
+          cover_image: series.cover_url,
+          slug: series.slug,
+          created_at: series.created_at,
+          type: "series",
+        }));
+
+        const merged = [...mappedPosts, ...mappedSeries].sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
 
         if (isMounted) {
-          const mappedPosts: PostCard[] = (data ?? []).map((post) => ({
-            id: post.id,
-            title: post.title,
-            cover_image: post.cover_url,
-            slug: post.slug,
-          }));
-
-          setPosts(mappedPosts);
-          setTotalPosts(count ?? 0);
+          setItems(merged);
+          setPage(1);
         }
       } catch (error) {
-        console.error("Failed to fetch dashboard posts:", error);
+        console.error("Failed to fetch dashboard content:", error);
 
         if (isMounted) {
-          setPosts([]);
-          setTotalPosts(0);
+          setItems([]);
         }
       } finally {
         if (isMounted) {
@@ -101,19 +119,28 @@ export default function DashboardPage() {
       }
     }
 
-    fetchPosts();
+    fetchDashboardContent();
 
     return () => {
       isMounted = false;
     };
-  }, [page, supabase]);
+  }, [supabase]);
+
+  const totalItems = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  const paginatedItems = useMemo(() => {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize;
+    return items.slice(from, to);
+  }, [items, page]);
 
   const canGoPrev = page > 1;
   const canGoNext = page < totalPages;
 
   const emptyMessage = useMemo(() => {
-    if (loading) return "Loading your posts...";
-    return "No published posts yet.";
+    if (loading) return "Loading your content...";
+    return "No posts or series yet.";
   }, [loading]);
 
   return (
@@ -230,7 +257,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {posts.length > 0 ? (
+          {paginatedItems.length > 0 ? (
             <div
               style={{
                 display: "grid",
@@ -238,66 +265,95 @@ export default function DashboardPage() {
                 gap: 14,
               }}
             >
-              {posts.map((post) => (
-                <Link
-                  key={post.id}
-                  href={post.slug ? `/post/${post.slug}` : "#"}
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <div
-                    style={{
-                      borderRadius: 16,
-                      overflow: "hidden",
-                      border: "1px solid var(--hp-border)",
-                      background: "var(--hp-card)",
-                      boxShadow: "var(--hp-shadow-card)",
-                      transition: "transform 120ms ease",
-                    }}
+              {paginatedItems.map((item) => {
+                const href =
+                  item.type === "post"
+                    ? item.slug
+                      ? `/post/${item.slug}`
+                      : "#"
+                    : item.slug
+                    ? `/series/${item.slug}`
+                    : "#";
+
+                return (
+                  <Link
+                    key={`${item.type}-${item.id}`}
+                    href={href}
+                    style={{ textDecoration: "none", color: "inherit" }}
                   >
                     <div
                       style={{
-                        width: "100%",
-                        aspectRatio: "16 / 10",
-                        background: post.cover_image
-                          ? "transparent"
-                          : "linear-gradient(180deg, rgba(124,108,255,0.10), rgba(124,108,255,0.03))",
+                        borderRadius: 16,
+                        overflow: "hidden",
+                        border: "1px solid var(--hp-border)",
+                        background: "var(--hp-card)",
+                        boxShadow: "var(--hp-shadow-card)",
+                        transition: "transform 120ms ease",
                       }}
                     >
-                      {post.cover_image ? (
-                        <img
-                          src={post.cover_image}
-                          alt={post.title}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            display: "block",
-                          }}
-                        />
-                      ) : (
+                      <div
+                        style={{
+                          width: "100%",
+                          aspectRatio: "16 / 10",
+                          background: item.cover_image
+                            ? "transparent"
+                            : "linear-gradient(180deg, rgba(124,108,255,0.10), rgba(124,108,255,0.03))",
+                          position: "relative",
+                        }}
+                      >
+                        {item.cover_image ? (
+                          <img
+                            src={item.cover_image}
+                            alt={item.title}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              display: "block",
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              display: "grid",
+                              placeItems: "center",
+                              fontSize: 12,
+                              color: "var(--hp-muted)",
+                            }}
+                          >
+                            No cover image
+                          </div>
+                        )}
+
                         <div
                           style={{
-                            width: "100%",
-                            height: "100%",
-                            display: "grid",
-                            placeItems: "center",
-                            fontSize: 12,
-                            color: "var(--hp-muted)",
+                            position: "absolute",
+                            top: 10,
+                            left: 10,
+                            padding: "4px 8px",
+                            borderRadius: 999,
+                            background: "rgba(0,0,0,0.68)",
+                            color: "#fff",
+                            fontSize: 11,
+                            fontWeight: 800,
+                            letterSpacing: 0.2,
                           }}
                         >
-                          No cover image
+                          {item.type === "post" ? "Post" : "Series"}
                         </div>
-                      )}
-                    </div>
+                      </div>
 
-                    <div style={{ padding: 12 }}>
-                      <div style={{ fontWeight: 850, fontSize: 13, lineHeight: 1.2 }}>
-                        {post.title}
+                      <div style={{ padding: 12 }}>
+                        <div style={{ fontWeight: 850, fontSize: 13, lineHeight: 1.2 }}>
+                          {item.title}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div
@@ -323,14 +379,14 @@ export default function DashboardPage() {
                       color: "var(--hp-muted)",
                     }}
                   >
-                    Your published posts will appear here.
+                    Your posts and series will appear here.
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {!loading && totalPosts > 0 && (
+          {!loading && totalItems > 0 && (
             <div
               style={{
                 marginTop: 22,

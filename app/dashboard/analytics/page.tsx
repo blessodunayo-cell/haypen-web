@@ -1,8 +1,98 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/app/lib/supabase/client";
+
+type AnalyticsStats = {
+  totalViews: number;
+  subscribers: number;
+  estimatedEarnings: number;
+  storiesPublished: number;
+};
 
 export default function AnalyticsPage() {
+  const supabase = createClient();
+
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<AnalyticsStats>({
+    totalViews: 0,
+    subscribers: 0,
+    estimatedEarnings: 0,
+    storiesPublished: 0,
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchAnalytics() {
+      try {
+        setLoading(true);
+
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          console.error("Failed to get current user:", userError);
+          window.location.href = "/login";
+          return;
+        }
+
+        const [postsResult, seriesResult] = await Promise.all([
+          supabase
+            .from("posts")
+            .select("id", { count: "exact", head: true })
+            .eq("author_id", user.id)
+            .eq("is_active", true),
+
+          supabase
+            .from("series")
+            .select("id", { count: "exact", head: true })
+            .eq("author_id", user.id)
+            .eq("is_active", true),
+        ]);
+
+        if (postsResult.error) throw postsResult.error;
+        if (seriesResult.error) throw seriesResult.error;
+
+        const storiesPublished =
+          (postsResult.count ?? 0) + (seriesResult.count ?? 0);
+
+        if (isMounted) {
+          setStats({
+            totalViews: 0,
+            subscribers: 0,
+            estimatedEarnings: 0,
+            storiesPublished,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch analytics:", error);
+
+        if (isMounted) {
+          setStats({
+            totalViews: 0,
+            subscribers: 0,
+            estimatedEarnings: 0,
+            storiesPublished: 0,
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchAnalytics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [supabase]);
+
   return (
     <main
       style={{
@@ -11,7 +101,6 @@ export default function AnalyticsPage() {
         color: "#1F1F24",
       }}
     >
-      {/* TOP NAV */}
       <div
         style={{
           position: "sticky",
@@ -51,17 +140,15 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* BODY */}
       <div style={{ padding: "28px 22px 40px", maxWidth: 1100, margin: "0 auto" }}>
         <h1 style={{ fontSize: 32, fontWeight: 950, marginBottom: 8 }}>
           Analytics
         </h1>
 
         <p style={{ opacity: 0.7, marginBottom: 28 }}>
-          Overview of your writing performance (dummy data)
+          Overview of your writing performance
         </p>
 
-        {/* STATS */}
         <div
           style={{
             display: "grid",
@@ -70,13 +157,63 @@ export default function AnalyticsPage() {
             marginBottom: 32,
           }}
         >
-          <StatCard label="Total Views" value="124,892" />
-          <StatCard label="Followers" value="12,104" />
-          <StatCard label="Estimated Earnings" value="$238.90" />
-          <StatCard label="Stories Published" value="46" />
+          <StatCard
+            label="Total Views"
+            value={loading ? "—" : stats.totalViews.toLocaleString()}
+          />
+          <StatCard
+            label="Subscribers"
+            value={loading ? "—" : stats.subscribers.toLocaleString()}
+          />
+          <StatCard
+            label="Estimated Earnings"
+            value={loading ? "—" : `$${stats.estimatedEarnings.toFixed(2)}`}
+          />
+          <StatCard
+            label="Stories Published"
+            value={loading ? "—" : stats.storiesPublished.toString()}
+          />
         </div>
 
-        {/* PERFORMANCE */}
+        <div
+          style={{
+            background: "#FBFAFF",
+            borderRadius: 18,
+            padding: 22,
+            border: "1px solid rgba(124,108,255,0.18)",
+            boxShadow: "0 10px 30px rgba(31,31,36,0.08)",
+            boxSizing: "border-box",
+            marginBottom: 24,
+          }}
+        >
+          <h2 style={{ marginBottom: 14, fontSize: 20, fontWeight: 900 }}>
+            Performance Overview
+          </h2>
+
+          <div
+            style={{
+              minHeight: 280,
+              borderRadius: 14,
+              border: "1px solid rgba(0,0,0,0.05)",
+              background:
+                "linear-gradient(180deg, rgba(124,108,255,0.05), rgba(124,108,255,0.02))",
+              display: "grid",
+              placeItems: "center",
+              textAlign: "center",
+              padding: 24,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 850, marginBottom: 8 }}>
+                No data yet
+              </div>
+              <div style={{ fontSize: 13, opacity: 0.7 }}>
+                Performance insights will appear here once your content starts getting activity.
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div
           style={{
             background: "#FBFAFF",
@@ -98,12 +235,21 @@ export default function AnalyticsPage() {
               background:
                 "linear-gradient(180deg, rgba(124,108,255,0.06), rgba(124,108,255,0.02))",
               border: "1px solid rgba(0,0,0,0.03)",
+              minHeight: 180,
+              display: "grid",
+              placeItems: "center",
+              textAlign: "center",
+              padding: 24,
             }}
           >
-            <DummyRow isFirst title="Broken Star 94" views="22,110" earnings="$44.20" />
-            <DummyRow title="The Hades of Lust" views="18,332" earnings="$36.10" />
-            <DummyRow title="No Escape" views="12,884" earnings="$25.02" />
-            <DummyRow title="Life Has No..." views="9,120" earnings="$18.44" />
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 850, marginBottom: 8 }}>
+                No data yet
+              </div>
+              <div style={{ fontSize: 13, opacity: 0.7 }}>
+                Your top performing stories will appear here once your content starts gaining traction.
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -125,43 +271,6 @@ function StatCard({ label, value }: { label: string; value: string }) {
       <div style={{ fontSize: 12, opacity: 0.65 }}>{label}</div>
       <div style={{ fontSize: 24, fontWeight: 950, marginTop: 6 }}>
         {value}
-      </div>
-    </div>
-  );
-}
-
-function DummyRow({
-  title,
-  views,
-  earnings,
-  isFirst = false,
-}: {
-  title: string;
-  views: string;
-  earnings: string;
-  isFirst?: boolean;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "14px 16px",
-        borderTop: isFirst ? "none" : "1px solid rgba(0,0,0,0.05)",
-        background: "transparent",
-        transition: "background 160ms ease",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = "rgba(124,108,255,0.05)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.background = "transparent";
-      }}
-    >
-      <div style={{ fontWeight: 750 }}>{title}</div>
-      <div style={{ display: "flex", gap: 20, opacity: 0.82 }}>
-        <span>{views} views</span>
-        <span>{earnings}</span>
       </div>
     </div>
   );
