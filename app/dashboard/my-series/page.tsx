@@ -23,34 +23,57 @@ export default function MySeriesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchSeries() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        setLoading(true);
 
-      if (!user) {
-        setLoading(false);
-        return;
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          console.error("Failed to get current user:", userError);
+          router.replace("/login");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("series")
+          .select("id, title, slug, cover_url")
+          .eq("author_id", user.id)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Error fetching series:", error);
+          if (isMounted) setSeries([]);
+          return;
+        }
+
+        if (isMounted) {
+          setSeries(data ?? []);
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching series:", error);
+        if (isMounted) {
+          setSeries([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-
-      const { data, error } = await supabase
-        .from("series")
-        .select("id, title, slug, cover_url")
-        .eq("author_id", user.id)
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching series:", error);
-      } else if (data) {
-        setSeries(data);
-      }
-
-      setLoading(false);
     }
 
     fetchSeries();
-  }, [supabase]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router, supabase]);
 
   return (
     <div
@@ -59,7 +82,6 @@ export default function MySeriesPage() {
         background: "#f3efff",
       }}
     >
-      {/* Header */}
       <div
         style={{
           height: 78,
@@ -104,7 +126,6 @@ export default function MySeriesPage() {
         </button>
       </div>
 
-      {/* Content */}
       <div
         style={{
           padding: "18px 0 48px",
@@ -156,17 +177,103 @@ export default function MySeriesPage() {
             gap: 18,
           }}
         >
-          {!loading &&
-            series.map((s) => (
+          {loading ? (
+            <p
+              style={{
+                fontSize: 15,
+                color: "#6b7280",
+              }}
+            >
+              Loading...
+            </p>
+          ) : (
+            <>
+              {series.map((s) => (
+                <div
+                  key={s.id}
+                  onClick={() => router.push(`/series/${s.slug}`)}
+                  style={{
+                    width: 270,
+                    borderRadius: 18,
+                    overflow: "hidden",
+                    background: "#ffffff",
+                    border: "1px solid #d8d4e8",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      height: 180,
+                      background: "#f8f7fc",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {s.cover_url ? (
+                      <img
+                        src={s.cover_url}
+                        alt={s.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#8b7cf6",
+                          fontWeight: 600,
+                          fontSize: 15,
+                        }}
+                      >
+                        No cover yet
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      padding: "14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 800,
+                        color: "#111827",
+                        marginBottom: 6,
+                      }}
+                    >
+                      {s.title}
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "#6b7280",
+                      }}
+                    >
+                      Series
+                    </div>
+                  </div>
+                </div>
+              ))}
+
               <div
-                key={s.id}
-                onClick={() => router.push(`/series/${s.slug}`)}
+                onClick={() => router.push("/dashboard/create-series")}
                 style={{
                   width: 270,
                   borderRadius: 18,
                   overflow: "hidden",
                   background: "#ffffff",
-                  border: "1px solid #d8d4e8",
+                  border: "1px dashed #b6abf8",
                   cursor: "pointer",
                 }}
               >
@@ -174,37 +281,16 @@ export default function MySeriesPage() {
                   style={{
                     width: "100%",
                     height: 180,
-                    background: "#f8f7fc",
-                    overflow: "hidden",
+                    background: "#faf8ff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#8b7cf6",
+                    fontWeight: 700,
+                    fontSize: 34,
                   }}
                 >
-                  {s.cover_url ? (
-                    <img
-                      src={s.cover_url}
-                      alt={s.title}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#8b7cf6",
-                        fontWeight: 600,
-                        fontSize: 15,
-                      }}
-                    >
-                      No cover yet
-                    </div>
-                  )}
+                  +
                 </div>
 
                 <div
@@ -220,7 +306,7 @@ export default function MySeriesPage() {
                       marginBottom: 6,
                     }}
                   >
-                    {s.title}
+                    Create New Series
                   </div>
 
                   <div
@@ -229,77 +315,22 @@ export default function MySeriesPage() {
                       color: "#6b7280",
                     }}
                   >
-                    Series
+                    Add a new story collection
                   </div>
                 </div>
               </div>
-            ))}
 
-          {!loading && (
-            <div
-              onClick={() => router.push("/dashboard/create-series")}
-              style={{
-                width: 270,
-                borderRadius: 18,
-                overflow: "hidden",
-                background: "#ffffff",
-                border: "1px dashed #b6abf8",
-                cursor: "pointer",
-              }}
-            >
-              <div
-                style={{
-                  width: "100%",
-                  height: 180,
-                  background: "#faf8ff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#8b7cf6",
-                  fontWeight: 700,
-                  fontSize: 34,
-                }}
-              >
-                +
-              </div>
-
-              <div
-                style={{
-                  padding: "14px",
-                }}
-              >
-                <div
+              {series.length === 0 && (
+                <p
                   style={{
-                    fontSize: 16,
-                    fontWeight: 800,
-                    color: "#111827",
-                    marginBottom: 6,
-                  }}
-                >
-                  Create New Series
-                </div>
-
-                <div
-                  style={{
-                    fontSize: 13,
+                    fontSize: 15,
                     color: "#6b7280",
                   }}
                 >
-                  Add a new story collection
-                </div>
-              </div>
-            </div>
-          )}
-
-          {loading && (
-            <p
-              style={{
-                fontSize: 15,
-                color: "#6b7280",
-              }}
-            >
-              Loading...
-            </p>
+                  You have not created any series yet.
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

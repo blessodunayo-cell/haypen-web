@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 
 type AnalyticsStats = {
@@ -13,6 +14,7 @@ type AnalyticsStats = {
 
 export default function AnalyticsPage() {
   const supabase = createClient();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AnalyticsStats>({
@@ -36,7 +38,7 @@ export default function AnalyticsPage() {
 
         if (userError || !user) {
           console.error("Failed to get current user:", userError);
-          window.location.href = "/login";
+          router.replace("/login");
           return;
         }
 
@@ -91,7 +93,7 @@ export default function AnalyticsPage() {
     return () => {
       isMounted = false;
     };
-  }, [supabase]);
+  }, [router, supabase]);
 
   return (
     <main

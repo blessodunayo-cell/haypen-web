@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 
 type MeProfile = {
@@ -19,6 +20,7 @@ type MeStats = {
 
 export default function MePage() {
   const supabase = createClient();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<MeProfile | null>(null);
@@ -42,7 +44,7 @@ export default function MePage() {
 
         if (userError || !user) {
           console.error("Failed to get current user:", userError);
-          window.location.href = "/login";
+          router.replace("/login");
           return;
         }
 
@@ -70,8 +72,7 @@ export default function MePage() {
         if (postsResult.error) throw postsResult.error;
         if (seriesResult.error) throw seriesResult.error;
 
-        const stories =
-          (postsResult.count ?? 0) + (seriesResult.count ?? 0);
+        const stories = (postsResult.count ?? 0) + (seriesResult.count ?? 0);
 
         if (isMounted) {
           setProfile(profileResult.data ?? null);
@@ -104,7 +105,7 @@ export default function MePage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [router, supabase]);
 
   const displayName = useMemo(() => {
     if (!profile) return "Writer";
@@ -292,7 +293,7 @@ export default function MePage() {
           <MeRow
             title="My Series"
             subtitle="Manage your series and chapters"
-            href="/series"
+            href="/dashboard/my-series"
             isFirst
           />
           <MeRow

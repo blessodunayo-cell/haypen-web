@@ -148,7 +148,7 @@ export default function DashboardClient() {
             <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
             <p className="text-neutral-300 mt-1">
               {profile.display_name} •{" "}
-              <Link className="underline" href={`/${profile.username}`}>
+              <Link className="underline" href={`/profile/${profile.username}`}>
                 @{profile.username}
               </Link>
             </p>

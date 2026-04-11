@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AvatarMenu from "@/components/feed/AvatarMenu";
 import { createClient } from "@/app/lib/supabase/client";
 
@@ -33,15 +34,22 @@ type DashboardItem = {
   type: "post" | "series";
 };
 
+type DashboardProfile = {
+  id: string;
+  username: string;
+  display_name: string | null;
+};
+
 export default function DashboardPage() {
   const supabase = createClient();
+  const router = useRouter();
 
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
   const [items, setItems] = useState<DashboardItem[]>([]);
+  const [profile, setProfile] = useState<DashboardProfile | null>(null);
   const [subscribers] = useState(0);
-  const [penName] = useState("GOLDEN PEN");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,11 +66,17 @@ export default function DashboardPage() {
 
         if (userError || !user) {
           console.error("Failed to get current user:", userError);
-          window.location.href = "/login";
+          router.replace("/login");
           return;
         }
 
-        const [postsResult, seriesResult] = await Promise.all([
+        const [profileResult, postsResult, seriesResult] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("id, username, display_name")
+            .eq("id", user.id)
+            .maybeSingle(),
+
           supabase
             .from("posts")
             .select("id, title, cover_url, slug, created_at")
@@ -76,6 +90,7 @@ export default function DashboardPage() {
             .eq("is_active", true),
         ]);
 
+        if (profileResult.error) throw profileResult.error;
         if (postsResult.error) throw postsResult.error;
         if (seriesResult.error) throw seriesResult.error;
 
@@ -103,6 +118,7 @@ export default function DashboardPage() {
         );
 
         if (isMounted) {
+          setProfile(profileResult.data ?? null);
           setItems(merged);
           setPage(1);
         }
@@ -110,6 +126,7 @@ export default function DashboardPage() {
         console.error("Failed to fetch dashboard content:", error);
 
         if (isMounted) {
+          setProfile(null);
           setItems([]);
         }
       } finally {
@@ -124,7 +141,7 @@ export default function DashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [supabase]);
+  }, [router, supabase]);
 
   const totalItems = items.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -142,6 +159,11 @@ export default function DashboardPage() {
     if (loading) return "Loading your content...";
     return "No posts or series yet.";
   }, [loading]);
+
+  const penName = useMemo(() => {
+    if (!profile) return "My Profile";
+    return profile.display_name?.trim() || profile.username || "My Profile";
+  }, [profile]);
 
   return (
     <main

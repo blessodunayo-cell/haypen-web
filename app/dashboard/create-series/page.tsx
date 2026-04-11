@@ -59,24 +59,44 @@ export default function CreateSeriesPage() {
   );
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchCategories() {
-      setLoadingMeta(true);
+      try {
+        setLoadingMeta(true);
+        setErrorMsg("");
 
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id, name, parent_id")
-        .order("name");
+        const { data, error } = await supabase
+          .from("categories")
+          .select("id, name, parent_id")
+          .order("name");
 
-      if (error) {
-        setErrorMsg("Failed to load categories.");
-      } else if (data) {
-        setCategories(data);
+        if (error) {
+          if (isMounted) {
+            setErrorMsg("Failed to load categories.");
+          }
+          return;
+        }
+
+        if (isMounted) {
+          setCategories(data ?? []);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setErrorMsg("Failed to load categories.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingMeta(false);
+        }
       }
-
-      setLoadingMeta(false);
     }
 
     fetchCategories();
+
+    return () => {
+      isMounted = false;
+    };
   }, [supabase]);
 
   async function handleCreateSeries(e: React.FormEvent) {
@@ -119,26 +139,29 @@ export default function CreateSeriesPage() {
 
       if (userError || !user) {
         setErrorMsg("You must be signed in to create a series.");
-        setSubmitting(false);
+        router.replace("/login");
         return;
       }
 
       let finalSlug = makeSlug(title);
       if (!finalSlug) finalSlug = `series-${Date.now()}`;
 
-      const { data: existingSlug } = await supabase
+      const { data: existingSlug, error: existingSlugError } = await supabase
         .from("series")
         .select("id")
         .eq("slug", finalSlug)
         .maybeSingle();
 
+      if (existingSlugError) {
+        setErrorMsg(existingSlugError.message || "Failed to validate series slug.");
+        return;
+      }
+
       if (existingSlug) {
         finalSlug = `${finalSlug}-${Date.now()}`;
       }
 
-      let uploadedCoverUrl: string | null = null;
-
-      const fileExt = coverFile.name.split(".").pop();
+      const fileExt = coverFile.name.split(".").pop() || "jpg";
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -147,7 +170,6 @@ export default function CreateSeriesPage() {
 
       if (uploadError) {
         setErrorMsg(uploadError.message || "Cover image upload failed.");
-        setSubmitting(false);
         return;
       }
 
@@ -155,9 +177,9 @@ export default function CreateSeriesPage() {
         .from("series-covers")
         .getPublicUrl(uploadData.path);
 
-      uploadedCoverUrl = publicUrlData.publicUrl;
+      const uploadedCoverUrl = publicUrlData.publicUrl;
 
-      const { data: createdSeries, error } = await supabase
+      const { data: createdSeries, error: createError } = await supabase
         .from("series")
         .insert({
           author_id: user.id,
@@ -172,9 +194,8 @@ export default function CreateSeriesPage() {
         .select("id")
         .single();
 
-      if (error || !createdSeries) {
-        setErrorMsg(error?.message || "Failed to create series.");
-        setSubmitting(false);
+      if (createError || !createdSeries) {
+        setErrorMsg(createError?.message || "Failed to create series.");
         return;
       }
 
@@ -191,7 +212,6 @@ export default function CreateSeriesPage() {
         setErrorMsg(
           subcatError.message || "Failed to save series subcategories."
         );
-        setSubmitting(false);
         return;
       }
 
@@ -202,9 +222,9 @@ export default function CreateSeriesPage() {
       }, 800);
     } catch (error) {
       setErrorMsg("Something went wrong while creating the series.");
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitting(false);
   }
 
   return (
@@ -324,7 +344,6 @@ export default function CreateSeriesPage() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder=""
                 style={{
                   width: "100%",
                   height: 48,

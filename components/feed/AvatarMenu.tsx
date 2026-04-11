@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,7 +34,7 @@ export default function AvatarMenu() {
         return;
       }
 
-      router.push("/login");
+      router.replace("/login");
       router.refresh();
     } catch (error) {
       console.error("Unexpected sign out error:", error);
