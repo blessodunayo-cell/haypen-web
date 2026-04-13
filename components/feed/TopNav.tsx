@@ -53,13 +53,7 @@ function BellIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-export default function TopNav({
-  onSignOut,
-  signingOut,
-}: {
-  onSignOut?: () => void;
-  signingOut?: boolean;
-}) {
+export default function TopNav() {
   return (
     <header
       className="hp-topnav"
@@ -79,7 +73,6 @@ export default function TopNav({
           gap: 18,
         }}
       >
-        {/* Left: Brand */}
         <Link
           href="/feed"
           style={{
@@ -94,7 +87,6 @@ export default function TopNav({
           Haypen
         </Link>
 
-        {/* Middle: Main nav links */}
         <nav style={{ display: "flex", gap: 18, alignItems: "center" }}>
           <Link href="/dashboard" style={navLinkStyle}>
             Dashboard
@@ -110,7 +102,6 @@ export default function TopNav({
           </Link>
         </nav>
 
-        {/* Right: Search + Notifications + Avatar */}
         <div
           style={{
             marginLeft: "auto",
@@ -119,7 +110,6 @@ export default function TopNav({
             alignItems: "center",
           }}
         >
-          {/* Search */}
           <Link
             href="/search"
             title="Search"
@@ -140,7 +130,6 @@ export default function TopNav({
             <SearchIcon size={18} />
           </Link>
 
-          {/* Notifications */}
           <button
             type="button"
             title="Notifications"
@@ -162,8 +151,7 @@ export default function TopNav({
             <BellIcon size={18} />
           </button>
 
-          {/* Avatar dropdown */}
-          <AvatarMenu onSignOut={onSignOut} signingOut={signingOut} />
+          <AvatarMenu />
         </div>
       </div>
     </header>

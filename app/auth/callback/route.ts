@@ -8,7 +8,7 @@ export async function GET(request: Request) {
 
   const cookieStore = await cookies();
 
-  // Create the redirect response FIRST, so Supabase can set cookies on it
+  // Default response (we will override later)
   const response = NextResponse.redirect(new URL("/feed", url.origin));
 
   const supabase = createServerClient(
@@ -29,8 +29,30 @@ export async function GET(request: Request) {
     }
   );
 
+  // 🔐 Exchange auth code for session
   if (code) {
     await supabase.auth.exchangeCodeForSession(code);
+  }
+
+  // 👤 Get current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return response;
+  }
+
+  // 🔍 Check if profile exists
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  // 🚦 Redirect logic
+  if (!profile) {
+    return NextResponse.redirect(new URL("/onboarding", url.origin));
   }
 
   return response;

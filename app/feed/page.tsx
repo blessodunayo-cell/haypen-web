@@ -21,7 +21,6 @@ export default function FeedPage() {
 
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
-  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -48,13 +47,6 @@ export default function FeedPage() {
       sub.subscription.unsubscribe();
     };
   }, []);
-
-  async function handleSignOut() {
-    setSigningOut(true);
-    await supabase.auth.signOut();
-    setSigningOut(false);
-    router.push("/");
-  }
 
   const posts = [
     {
@@ -109,7 +101,7 @@ export default function FeedPage() {
 
   return (
     <div className="hp-page">
-      <TopNav onSignOut={handleSignOut} signingOut={signingOut} />
+      <TopNav />
       <FeedTabs active="for-you" />
 
       <main className={styles.wrap}>
