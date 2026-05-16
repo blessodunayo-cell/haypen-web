@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 
 export default function SignupPage() {
+  const router = useRouter();
+
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -13,10 +17,7 @@ export default function SignupPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const labelStyle: React.CSSProperties = {
-    display: "grid",
-    gap: 6,
-  };
+  const labelStyle: React.CSSProperties = { display: "grid", gap: 6 };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -30,13 +31,28 @@ export default function SignupPage() {
     boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
   };
 
+  function cleanUsername(value: string) {
+    return value
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9_-]/g, "");
+  }
+
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setMessage(null);
 
-    if (!displayName.trim()) return setError("Please enter a display name.");
-    if (!email.trim()) return setError("Please enter your email.");
+    const finalDisplayName = displayName.trim();
+    const finalUsername = cleanUsername(username);
+    const finalEmail = email.trim();
+
+    if (!finalDisplayName) return setError("Please enter a display name.");
+    if (!finalUsername) return setError("Please choose a username.");
+    if (finalUsername.length < 3)
+      return setError("Username must be at least 3 characters.");
+    if (!finalEmail) return setError("Please enter your email.");
     if (!password || password.length < 8)
       return setError("Password must be at least 8 characters.");
 
@@ -44,8 +60,24 @@ export default function SignupPage() {
 
     const supabase = createClient();
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(),
+    const { data: existingUsername, error: usernameError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", finalUsername)
+      .maybeSingle();
+
+    if (usernameError) {
+      setLoading(false);
+      return setError(usernameError.message);
+    }
+
+    if (existingUsername) {
+      setLoading(false);
+      return setError("That username is already taken.");
+    }
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: finalEmail,
       password,
       options: {
         emailRedirectTo:
@@ -53,15 +85,34 @@ export default function SignupPage() {
             ? `${window.location.origin}/auth/callback`
             : undefined,
         data: {
-          display_name: displayName.trim(),
+          display_name: finalDisplayName,
+          username: finalUsername,
         },
       },
     });
 
+    if (signUpError) {
+      setLoading(false);
+      return setError(signUpError.message);
+    }
+
+    if (data.session && data.user) {
+      const { error: profileError } = await supabase.from("profiles").upsert({
+        id: data.user.id,
+        display_name: finalDisplayName,
+        username: finalUsername,
+      });
+
+      setLoading(false);
+
+      if (profileError) return setError(profileError.message);
+
+      router.push("/feed");
+      router.refresh();
+      return;
+    }
+
     setLoading(false);
-
-    if (signUpError) return setError(signUpError.message);
-
     setMessage("Account created ✅ Check your email to verify.");
     setPassword("");
   }
@@ -94,6 +145,17 @@ export default function SignupPage() {
               style={inputStyle}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
+              required
+            />
+          </label>
+
+          <label style={labelStyle}>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>Username</span>
+            <input
+              placeholder="e.g. blessingwrites"
+              style={inputStyle}
+              value={username}
+              onChange={(e) => setUsername(cleanUsername(e.target.value))}
               required
             />
           </label>
@@ -137,7 +199,7 @@ export default function SignupPage() {
             {loading ? "Creating..." : "Create account"}
           </button>
 
-          {error ? (
+          {error && (
             <div
               style={{
                 marginTop: 4,
@@ -152,9 +214,9 @@ export default function SignupPage() {
             >
               {error}
             </div>
-          ) : null}
+          )}
 
-          {message ? (
+          {message && (
             <div
               style={{
                 marginTop: 4,
@@ -169,7 +231,7 @@ export default function SignupPage() {
             >
               {message}
             </div>
-          ) : null}
+          )}
         </form>
 
         <p className="hp-muted" style={{ marginTop: 14, fontSize: 13 }}>

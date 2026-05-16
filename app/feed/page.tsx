@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/app/lib/supabase/client";
 
 import TopNav from "@/components/feed/TopNav";
 import FeedTabs from "@/components/feed/FeedTabs";
@@ -11,13 +11,9 @@ import FeedRightRail from "@/components/feed/FeedRightRail";
 
 import styles from "./feed.module.css";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export default function FeedPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
@@ -46,7 +42,13 @@ export default function FeedPage() {
       alive = false;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!loading && !email) {
+      router.push("/login");
+    }
+  }, [loading, email, router]);
 
   const posts = [
     {
@@ -95,7 +97,6 @@ export default function FeedPage() {
   }
 
   if (!email) {
-    router.push("/login");
     return null;
   }
 
@@ -105,13 +106,7 @@ export default function FeedPage() {
       <FeedTabs active="for-you" />
 
       <main className={styles.wrap}>
-        <div
-          className="hp-surface"
-          style={{
-            padding: 16,
-            marginTop: 14,
-          }}
-        >
+        <div className="hp-surface" style={{ padding: 16, marginTop: 14 }}>
           <div className={styles.grid}>
             <section className={styles.feedCol}>
               {posts.map((p) => (

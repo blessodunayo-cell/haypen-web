@@ -8,8 +8,9 @@ export async function GET(request: Request) {
 
   const cookieStore = await cookies();
 
-  // Default response (we will override later)
-  const response = NextResponse.redirect(new URL("/feed", url.origin));
+  const response = NextResponse.redirect(
+    new URL("/feed", url.origin)
+  );
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,36 +24,19 @@ export async function GET(request: Request) {
           response.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: any) {
-          response.cookies.set({ name, value: "", ...options, maxAge: 0 });
+          response.cookies.set({
+            name,
+            value: "",
+            ...options,
+            maxAge: 0,
+          });
         },
       },
     }
   );
 
-  // 🔐 Exchange auth code for session
   if (code) {
     await supabase.auth.exchangeCodeForSession(code);
-  }
-
-  // 👤 Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return response;
-  }
-
-  // 🔍 Check if profile exists
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  // 🚦 Redirect logic
-  if (!profile) {
-    return NextResponse.redirect(new URL("/onboarding", url.origin));
   }
 
   return response;

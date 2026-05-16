@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/app/lib/supabase/client";
 
 export default function LoginPage() {
@@ -10,30 +10,13 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [stayLoggedIn, setStayLoggedIn] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const labelStyle: React.CSSProperties = {
-    display: "grid",
-    gap: 6,
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: 12,
-    marginTop: 6,
-    borderRadius: 12,
-    border: "1px solid var(--hp-border)",
-    background: "var(--hp-card)",
-    color: "var(--hp-text)",
-    outline: "none",
-    boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
-  };
-
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setMsg(null);
+    setErrorMsg("");
     setLoading(true);
 
     const supabase = createClient();
@@ -46,135 +29,90 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
-      setMsg(error.message);
+      setErrorMsg(error.message || "Failed to sign in.");
       return;
     }
 
     router.push("/feed");
+    router.refresh();
   }
 
   return (
-    <main
-      className="hp-page"
-      style={{ display: "grid", placeItems: "center", padding: "40px 16px" }}
-    >
-      <div className="hp-surface" style={{ width: "100%", maxWidth: 520, padding: 22 }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: 0.2 }}>
-            Haypen
-          </div>
+    <main className="min-h-screen bg-[#f1edf8] flex items-center justify-center px-4 py-10">
+      <section className="w-full max-w-[520px] rounded-[18px] border border-[#ddd6ea] bg-[#fbfaff] px-6 py-7 shadow-[0_18px_45px_rgba(79,60,130,0.12)] sm:px-7">
+        <h1 className="mb-5 text-[16px] font-extrabold text-black">Haypen</h1>
 
-          <h1 style={{ fontSize: 28, fontWeight: 950, marginTop: 10 }}>
-            Sign in
-          </h1>
+        <h2 className="mb-3 text-[30px] font-extrabold leading-none tracking-tight text-black">
+          Sign in
+        </h2>
 
-          <p className="hp-muted" style={{ marginTop: 8, fontSize: 14, lineHeight: 1.45 }}>
-            Welcome back. Sign in to continue.
-          </p>
-        </div>
+        <p className="mb-6 text-[14px] text-[#5f5b6b]">
+          Welcome back. Sign in to continue.
+        </p>
 
-        <form
-          onSubmit={handleLogin}
-          style={{ marginTop: 18, display: "grid", gap: 14 }}
-        >
-          {/* Email */}
-          <label style={labelStyle}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Email</span>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              style={inputStyle}
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+        <form onSubmit={handleLogin}>
+          <label className="mb-2 block text-[14px] font-bold text-black">
+            Email
           </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
+            className="mb-4 h-[50px] w-full rounded-[12px] border border-[#ddd3f1] bg-white px-4 text-[16px] text-black outline-none transition focus:border-[#b8a7e6]"
+          />
 
-          {/* Password */}
-          <label style={labelStyle}>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>Password</span>
-            <input
-              type="password"
-              placeholder="Your password"
-              style={inputStyle}
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          <label className="mb-2 block text-[14px] font-bold text-black">
+            Password
           </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Your password"
+            required
+            className="mb-4 h-[50px] w-full rounded-[12px] border border-[#ddd3f1] bg-white px-4 text-[16px] text-black outline-none transition focus:border-[#b8a7e6]"
+          />
 
-          {/* Stay logged in (UI only for now) */}
-          <label
-            style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "center",
-              fontSize: 14,
-              color: "var(--hp-muted)",
-              userSelect: "none",
-            }}
-          >
-            <input type="checkbox" defaultChecked />
+          <label className="mb-5 flex items-center gap-2 text-[14px] text-[#4f4a5f]">
+            <input
+              type="checkbox"
+              checked={stayLoggedIn}
+              onChange={(e) => setStayLoggedIn(e.target.checked)}
+              className="h-[13px] w-[13px]"
+            />
             Stay logged in
           </label>
 
           <button
             type="submit"
             disabled={loading}
-            className="hp-primary"
-            style={{
-              padding: 12,
-              fontWeight: 800,
-              border: "none",
-              opacity: loading ? 0.7 : 1,
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
+            className="mb-5 h-[48px] w-full rounded-full bg-black text-[16px] font-extrabold text-white transition hover:opacity-90 disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
 
-          {msg ? (
-            <div
-              style={{
-                marginTop: 4,
-                padding: "10px 12px",
-                borderRadius: 12,
-                border: "1px solid rgba(255, 107, 107, 0.35)",
-                background: "rgba(255, 107, 107, 0.08)",
-                color: "#b42318",
-                fontSize: 13,
-                fontWeight: 650,
-              }}
-            >
-              {msg}
+          {errorMsg && (
+            <div className="mb-5 rounded-[12px] border border-red-200 bg-red-50 px-4 py-3 text-[14px] font-semibold text-red-600">
+              {errorMsg}
             </div>
-          ) : null}
+          )}
 
-          {/* Links */}
-          <div
-            style={{
-              marginTop: 6,
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
-              fontSize: 13,
-              color: "var(--hp-muted)",
-              flexWrap: "wrap",
-            }}
-          >
-            <Link href="/forgot-password" style={{ textDecoration: "underline", color: "var(--hp-text)" }}>
+          <div className="flex items-center justify-between text-[14px]">
+            <Link href="/forgot-password" className="text-black underline">
               Forgot password?
             </Link>
 
-            <span>
+            <p className="text-[#5f5b6b]">
               Don&apos;t have an account?{" "}
-              <Link href="/signup" style={{ textDecoration: "underline", color: "var(--hp-text)" }}>
+              <Link href="/signup" className="text-black underline">
                 Create one
               </Link>
-            </span>
+            </p>
           </div>
         </form>
-      </div>
+      </section>
     </main>
   );
 }
