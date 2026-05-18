@@ -1,4 +1,5 @@
 import { createClient } from "@/app/lib/supabase/server";
+import ReadTracker from "./ReadTracker";
 
 export default async function PostPage(props: {
   params: { slug: string } | Promise<{ slug: string }>;
@@ -27,6 +28,8 @@ export default async function PostPage(props: {
 
   return (
     <div className="min-h-screen bg-[#ebe6f7] px-6 py-10">
+      <ReadTracker postId={(post as any).id} />
+
       <div className="mx-auto max-w-3xl">
         <div className="rounded-3xl border border-gray-200 bg-[#f3f3f3] p-8 shadow-sm">
 
